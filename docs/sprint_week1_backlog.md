@@ -1,6 +1,6 @@
 # Sprint Backlog (Woche 1-2): Enterprise-Readiness Foundation
 
-Status: `in-progress (P0 complete)`  
+Status: `completed`  
 Ziel: Phase 0 abschließen und den ersten vertikalen Slice für IAM/RBAC liefern.
 
 ## Sprint-Status (laufend)
@@ -11,8 +11,8 @@ Ziel: Phase 0 abschließen und den ersten vertikalen Slice für IAM/RBAC liefern
 - `W1-05` done
 - `W1-06` done
 - `W1-07` done
-- `W1-08` pending
-- `W1-09` pending
+- `W1-08` done
+- `W1-09` done
 - `W1-10` done
 - `W1-11` done
 - `W1-12` done
