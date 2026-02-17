@@ -12,3 +12,4 @@ reports/benchmarks/*
 !reports/benchmarks/.gitkeep
 reports/audit/*.log
 reports/jobs/*.json
+reports/jobs.db

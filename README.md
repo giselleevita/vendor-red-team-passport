@@ -37,6 +37,10 @@ Note: all endpoints except `GET /health` require bearer authentication.
 Error responses use a consistent JSON contract:
 `{"code":"...", "message":"...", "correlation_id":"...", "detail": ...}`
 
+Job metadata storage:
+- `JOB_STORE_BACKEND=file` (default, JSON under `reports/jobs/`)
+- `JOB_STORE_BACKEND=sql` + `JOB_STORE_DSN=sqlite:///...` or `postgresql://...`
+
 ### POST /runs body
 ```json
 {

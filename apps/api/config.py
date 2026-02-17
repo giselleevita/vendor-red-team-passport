@@ -23,6 +23,8 @@ class Settings(BaseSettings):
     auth_default_tenant_id: str = "default"
     auth_legacy_default_tenant_id: str = "legacy"
     rbac_enabled: bool = True
+    job_store_backend: str = "file"
+    job_store_dsn: str = ""
 
 
 @lru_cache(maxsize=1)
