@@ -8,6 +8,7 @@ from pathlib import Path
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from apps.api.schemas.passport import Passport
+from apps.api.config import get_settings
 from apps.api.services.compliance_mapper import map_compliance
 from apps.api.services.coverage import build_coverage_report
 from apps.api.services.evaluator import evaluate_case, load_case_suite
@@ -48,6 +49,7 @@ def run_orchestrated(
     only_classes: list[str] | None,
     a9_mode: str,
     params: dict | None = None,
+    tenant_id: str | None = None,
     run_id: str | None = None,
     suite_path: str | Path = "data/cases/cases.v1.json",
     profile: dict | None = None,
@@ -57,6 +59,8 @@ def run_orchestrated(
     Sanitized-only persistence (no raw prompts, no raw responses).
     """
     run_id = run_id or str(uuid.uuid4())
+    settings = get_settings()
+    tenant_id = (tenant_id or "").strip() or settings.auth_default_tenant_id
     suite_path = Path(suite_path)
     suite = load_case_suite(suite_path)
 
@@ -83,6 +87,7 @@ def run_orchestrated(
             "finished_at_utc": None,
             "provider": "featherless",
             "model": model,
+            "tenant_id": tenant_id,
             "endpoint": "/v1/chat/completions",
             "params": params,
             "suite_version": suite.suite_version,

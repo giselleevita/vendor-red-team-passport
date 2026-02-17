@@ -2,19 +2,21 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from fastapi import APIRouter, HTTPException, Query, Request
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.templating import Jinja2Templates
 
 from apps.api.config import get_settings
+from apps.api.services.auth import RequestContext, require_roles
 from apps.api.services.claims import build_claim_matrix
 from apps.api.services.orchestrator import render_passport_html
 from apps.api.services.profiles import list_profiles
 from apps.api.services.run_store import (
     iter_case_evidence,
-    list_run_ids,
+    list_run_ids_for_tenant,
     load_passport,
     load_run_meta,
+    run_accessible_by_tenant,
     run_dir,
     save_passport_html,
 )
@@ -28,9 +30,14 @@ def _bad_run_id(e: ValueError) -> HTTPException:
 
 
 @router.get("/", response_class=HTMLResponse)
-def landing(request: Request) -> HTMLResponse:
+def landing(
+    request: Request,
+    ctx: RequestContext = Depends(require_roles("viewer", "auditor", "operator", "admin")),
+) -> HTMLResponse:
+    _ = ctx
     settings = get_settings()
     return templates.TemplateResponse(
+        request,
         "index.html.j2",
         {
             "request": request,
@@ -41,9 +48,12 @@ def landing(request: Request) -> HTMLResponse:
 
 
 @router.get("/runs", response_class=HTMLResponse)
-def runs_list(request: Request) -> HTMLResponse:
+def runs_list(
+    request: Request,
+    ctx: RequestContext = Depends(require_roles("viewer", "auditor", "operator", "admin")),
+) -> HTMLResponse:
     runs = []
-    for run_id in list_run_ids()[::-1]:
+    for run_id in list_run_ids_for_tenant(ctx.tenant_id)[::-1]:
         meta = load_run_meta(run_id) or {}
         passport = load_passport(run_id)
         summary = passport.summary.model_dump() if passport else {}
@@ -66,6 +76,7 @@ def runs_list(request: Request) -> HTMLResponse:
     runs.sort(key=lambda r: r.get("created_at_utc", ""), reverse=True)
 
     return templates.TemplateResponse(
+        request,
         "runs.html.j2",
         {
             "request": request,
@@ -75,7 +86,12 @@ def runs_list(request: Request) -> HTMLResponse:
 
 
 @router.get("/runs/{run_id}", response_class=HTMLResponse)
-def run_detail(run_id: str) -> FileResponse:
+def run_detail(
+    run_id: str,
+    ctx: RequestContext = Depends(require_roles("viewer", "auditor", "operator", "admin")),
+) -> FileResponse:
+    if not run_accessible_by_tenant(run_id, ctx.tenant_id):
+        raise HTTPException(status_code=404, detail="run_id not found")
     try:
         html_path = run_dir(run_id) / "passport.html"
     except ValueError as e:
@@ -96,7 +112,13 @@ def run_detail(run_id: str) -> FileResponse:
 
 
 @router.get("/runs/{run_id}/claims", response_class=HTMLResponse)
-def run_claims(request: Request, run_id: str) -> HTMLResponse:
+def run_claims(
+    request: Request,
+    run_id: str,
+    ctx: RequestContext = Depends(require_roles("viewer", "auditor", "operator", "admin")),
+) -> HTMLResponse:
+    if not run_accessible_by_tenant(run_id, ctx.tenant_id):
+        raise HTTPException(status_code=404, detail="run_id not found")
     try:
         meta = load_run_meta(run_id) or {}
         passport = load_passport(run_id)
@@ -114,6 +136,7 @@ def run_claims(request: Request, run_id: str) -> HTMLResponse:
     )
 
     return templates.TemplateResponse(
+        request,
         "claims.html.j2",
         {
             "request": request,
@@ -126,18 +149,21 @@ def run_claims(request: Request, run_id: str) -> HTMLResponse:
 def compare_runs(
     request: Request,
     run_id: list[str] = Query(default=[]),
+    ctx: RequestContext = Depends(require_roles("viewer", "auditor", "operator", "admin")),
 ) -> HTMLResponse:
-    available = list_run_ids()[::-1]
+    available = list_run_ids_for_tenant(ctx.tenant_id)[::-1]
     selected = run_id[:2] if run_id else []
 
     if len(selected) == 0:
         return templates.TemplateResponse(
+            request,
             "compare.html.j2",
             {"request": request, "available": available, "error": "", "comparison": None},
         )
 
     if len(selected) != 2:
         return templates.TemplateResponse(
+            request,
             "compare.html.j2",
             {
                 "request": request,
@@ -148,11 +174,23 @@ def compare_runs(
         )
 
     a, b = selected
+    if not run_accessible_by_tenant(a, ctx.tenant_id) or not run_accessible_by_tenant(b, ctx.tenant_id):
+        return templates.TemplateResponse(
+            request,
+            "compare.html.j2",
+            {
+                "request": request,
+                "available": available,
+                "error": "One or both run_id values were not found on disk.",
+                "comparison": None,
+            },
+        )
     try:
         pa = load_passport(a)
         pb = load_passport(b)
     except ValueError:
         return templates.TemplateResponse(
+            request,
             "compare.html.j2",
             {
                 "request": request,
@@ -163,6 +201,7 @@ def compare_runs(
         )
     if pa is None or pb is None:
         return templates.TemplateResponse(
+            request,
             "compare.html.j2",
             {
                 "request": request,
@@ -226,6 +265,7 @@ def compare_runs(
     }
 
     return templates.TemplateResponse(
+        request,
         "compare.html.j2",
         {
             "request": request,

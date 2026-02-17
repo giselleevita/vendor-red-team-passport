@@ -4,6 +4,7 @@ import json
 import os
 from pathlib import Path
 
+from apps.api.config import get_settings
 from apps.api.schemas.passport import Passport
 
 
@@ -141,6 +142,30 @@ def list_run_ids() -> list[str]:
         except ValueError:
             continue
     return sorted(out)
+
+
+def tenant_for_run_meta(meta: dict | None) -> str:
+    settings = get_settings()
+    raw = str((meta or {}).get("tenant_id", "")).strip()
+    return raw or settings.auth_legacy_default_tenant_id
+
+
+def run_accessible_by_tenant(run_id: str, tenant_id: str) -> bool:
+    try:
+        meta = load_run_meta(run_id)
+    except ValueError:
+        return False
+    if meta is None:
+        return False
+    return tenant_for_run_meta(meta) == tenant_id
+
+
+def list_run_ids_for_tenant(tenant_id: str) -> list[str]:
+    out = []
+    for rid in list_run_ids():
+        if run_accessible_by_tenant(rid, tenant_id):
+            out.append(rid)
+    return out
 
 
 def load_run_meta(run_id: str) -> dict | None:
