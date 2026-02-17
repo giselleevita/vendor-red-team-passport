@@ -10,9 +10,9 @@ from pydantic import BaseModel, Field
 from apps.api.config import get_settings
 from apps.api.services.audit import log_audit_event
 from apps.api.services.auth import RequestContext, hash_subject, require_roles
-from apps.api.services.jobs import create_job, load_job, update_job
+from apps.api.services.job_executor import execute_job
+from apps.api.services.jobs import create_job, load_job
 from apps.api.services.profiles import load_profile
-from apps.api.services.orchestrator import run_orchestrated
 
 router = APIRouter()
 
@@ -25,54 +25,6 @@ class RunCreateRequest(BaseModel):
     )
     a9_mode: Literal["auto", "compat", "strict"] | None = Field(default=None)
     params: dict | None = Field(default=None, description="Optional generation params (temperature, max_tokens)")
-
-
-def _execute_run_job(
-    *,
-    job_id: str,
-    run_id: str,
-    tenant_id: str,
-    model: str,
-    only_classes: list[str] | None,
-    a9_mode: str,
-    params: dict | None,
-    suite_path: str,
-    profile: dict | None,
-) -> None:
-    update_job(job_id, {"status": "running", "started_at_utc": datetime_now_utc()})
-    try:
-        run_orchestrated(
-            model=model,
-            only_classes=only_classes,
-            a9_mode=a9_mode,
-            params=params,
-            tenant_id=tenant_id,
-            run_id=run_id,
-            suite_path=suite_path,
-            profile=profile,
-        )
-        update_job(
-            job_id,
-            {
-                "status": "succeeded",
-                "finished_at_utc": datetime_now_utc(),
-            },
-        )
-    except Exception as e:  # noqa: BLE001
-        update_job(
-            job_id,
-            {
-                "status": "failed",
-                "finished_at_utc": datetime_now_utc(),
-                "error": str(e)[:240],
-            },
-        )
-
-
-def datetime_now_utc() -> str:
-    from datetime import datetime, timezone
-
-    return datetime.now(tz=timezone.utc).isoformat()
 
 
 @router.post("/runs")
@@ -155,30 +107,28 @@ def create_run(
             "created_by": hash_subject(ctx.subject),
             "model": model,
             "profile": (profile.get("name") if isinstance(profile, dict) else ""),
+            "profile_ref": req.profile or "",
             "a9_mode": a9_mode,
             "only_classes": only_classes or [],
             "suite_path": suite_path,
+            "params": params or {},
         },
     )
-    background_tasks.add_task(
-        _execute_run_job,
-        job_id=job_id,
-        run_id=run_id,
-        tenant_id=ctx.tenant_id,
-        model=model,
-        only_classes=only_classes,
-        a9_mode=a9_mode,
-        params=params,
-        suite_path=suite_path,
-        profile=profile,
-    )
+    mode = (settings.run_executor_mode or "inline").strip().lower()
+    if mode == "inline":
+        background_tasks.add_task(execute_job, job_id)
+    elif mode == "external":
+        # External workers pick queued jobs from store.
+        pass
+    else:
+        raise HTTPException(status_code=500, detail="invalid run executor mode")
     log_audit_event(
         action="run.queue",
         result="allow",
         actor=hash_subject(ctx.subject),
         tenant_id=ctx.tenant_id,
         resource=f"/runs/{run_id}",
-        detail=f"run queued job_id={job_id}",
+        detail=f"run queued job_id={job_id} mode={mode}",
         method=request.method,
     )
     return {

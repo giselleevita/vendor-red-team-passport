@@ -41,6 +41,10 @@ Job metadata storage:
 - `JOB_STORE_BACKEND=file` (default, JSON under `reports/jobs/`)
 - `JOB_STORE_BACKEND=sql` + `JOB_STORE_DSN=sqlite:///...` or `postgresql://...`
 
+Run execution mode:
+- `RUN_EXECUTOR_MODE=inline` (default; executes queued jobs in-process)
+- `RUN_EXECUTOR_MODE=external` (API only queues; run `python scripts/worker_run_jobs.py`)
+
 ### POST /runs body
 ```json
 {

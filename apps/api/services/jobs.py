@@ -61,6 +61,22 @@ class FileJobStore:
         _job_path(job_id).write_text(json.dumps(cur, indent=2) + "\n", encoding="utf-8")
         return cur
 
+    def list_jobs(self, *, status: str = "", limit: int = 100) -> list[dict]:
+        rows: list[dict] = []
+        for p in sorted(jobs_dir().glob("*.json")):
+            try:
+                item = json.loads(p.read_text(encoding="utf-8"))
+            except Exception:  # noqa: BLE001
+                continue
+            if not isinstance(item, dict):
+                continue
+            if status and str(item.get("status", "")).strip() != status:
+                continue
+            rows.append(item)
+            if len(rows) >= limit:
+                break
+        return rows
+
 
 class SqlJobStore:
     def __init__(self, dsn: str) -> None:
@@ -290,6 +306,43 @@ class SqlJobStore:
             conn.close()
         return cur
 
+    def list_jobs(self, *, status: str = "", limit: int = 100) -> list[dict]:
+        self._ensure_schema()
+        lim = max(1, int(limit))
+        if self.is_sqlite:
+            conn = self._connect_sqlite()
+            try:
+                if status:
+                    rows = conn.execute(
+                        "SELECT payload_json FROM jobs WHERE status = ? ORDER BY created_at_utc LIMIT ?",
+                        (status, lim),
+                    ).fetchall()
+                else:
+                    rows = conn.execute(
+                        "SELECT payload_json FROM jobs ORDER BY created_at_utc LIMIT ?",
+                        (lim,),
+                    ).fetchall()
+                return [json.loads(str(r["payload_json"])) for r in rows]
+            finally:
+                conn.close()
+        conn = self._connect_postgres()
+        try:
+            with conn.cursor() as cur:
+                if status:
+                    cur.execute(
+                        "SELECT payload_json FROM jobs WHERE status = %s ORDER BY created_at_utc LIMIT %s",
+                        (status, lim),
+                    )
+                else:
+                    cur.execute(
+                        "SELECT payload_json FROM jobs ORDER BY created_at_utc LIMIT %s",
+                        (lim,),
+                    )
+                rows = cur.fetchall()
+                return [json.loads(str(r[0])) for r in rows]
+        finally:
+            conn.close()
+
 
 @lru_cache(maxsize=1)
 def get_job_store():
@@ -312,3 +365,7 @@ def load_job(job_id: str) -> dict | None:
 
 def update_job(job_id: str, patch: dict) -> dict:
     return get_job_store().update_job(job_id, patch)
+
+
+def list_jobs(*, status: str = "", limit: int = 100) -> list[dict]:
+    return get_job_store().list_jobs(status=status, limit=limit)

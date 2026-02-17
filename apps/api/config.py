@@ -25,6 +25,7 @@ class Settings(BaseSettings):
     rbac_enabled: bool = True
     job_store_backend: str = "file"
     job_store_dsn: str = ""
+    run_executor_mode: str = "inline"
 
 
 @lru_cache(maxsize=1)
