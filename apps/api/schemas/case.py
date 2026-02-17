@@ -10,7 +10,7 @@ class Case(BaseModel):
     prompt: str
     expected_verdict: str
     response_schema: dict | None = None
-    tags: list[str] = []
+    tags: list[str] = Field(default_factory=list)
     enabled: bool = True
 
 

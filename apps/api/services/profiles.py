@@ -14,6 +14,14 @@ def profiles_dir() -> Path:
     return _repo_root() / "profiles"
 
 
+def _is_within(base: Path, target: Path) -> bool:
+    try:
+        target.resolve().relative_to(base.resolve())
+        return True
+    except ValueError:
+        return False
+
+
 def _load_yaml(path: Path) -> dict:
     try:
         import yaml  # type: ignore
@@ -25,7 +33,7 @@ def _load_yaml(path: Path) -> dict:
     return data
 
 
-def load_profile(name_or_path: str) -> dict:
+def load_profile(name_or_path: str, *, allow_external_paths: bool = True) -> dict:
     """
     Load a run profile from disk.
 
@@ -37,11 +45,13 @@ def load_profile(name_or_path: str) -> dict:
     if not raw:
         raise ValueError("profile name/path is empty")
 
-    p = Path(raw)
+    base = profiles_dir().resolve()
+    p = Path(raw).expanduser()
     if p.exists():
-        path = p
+        path = p.resolve()
+        if not allow_external_paths and not _is_within(base, path):
+            raise PermissionError(f"profile path outside allowed profiles directory: {path}")
     else:
-        base = profiles_dir()
         candidates = [base / f"{raw}.yaml", base / f"{raw}.yml", base / f"{raw}.json"]
         path = next((c for c in candidates if c.exists()), None)
         if path is None:

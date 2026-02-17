@@ -28,7 +28,12 @@ class RunCreateRequest(BaseModel):
 def create_run(req: RunCreateRequest) -> dict[str, str]:
     settings = get_settings()
     run_id = str(uuid.uuid4())
-    profile = load_profile(req.profile) if req.profile else None
+    try:
+        profile = load_profile(req.profile, allow_external_paths=False) if req.profile else None
+    except FileNotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e)) from e
+    except Exception as e:  # noqa: BLE001
+        raise HTTPException(status_code=400, detail=str(e)) from e
 
     model = (req.model or "").strip() or (profile.get("model") if profile else "") or settings.default_model
     suite_path = (profile.get("suite_path") if profile else "") or "data/cases/cases.v1.json"

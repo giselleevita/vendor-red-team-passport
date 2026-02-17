@@ -15,9 +15,8 @@ def get_profiles() -> list[dict]:
 @router.get("/profiles/{name}")
 def get_profile(name: str) -> dict:
     try:
-        return load_profile(name)
+        return load_profile(name, allow_external_paths=False)
     except FileNotFoundError as e:
         raise HTTPException(status_code=404, detail=str(e)) from e
     except Exception as e:  # noqa: BLE001
         raise HTTPException(status_code=400, detail=str(e)) from e
-
