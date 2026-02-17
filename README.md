@@ -29,8 +29,12 @@ Open:
 - `POST /runs` (JSON body)
 - `GET /passports/{run_id}`
 - `GET /profiles` (available run profiles)
+- `GET /metrics` (auditor/admin; `fmt=prom|json`)
 
 Note: all endpoints except `GET /health` require bearer authentication.
+
+Error responses use a consistent JSON contract:
+`{"code":"...", "message":"...", "correlation_id":"...", "detail": ...}`
 
 ### POST /runs body
 ```json

@@ -9,6 +9,7 @@ import time
 import pytest
 
 from apps.api.config import get_settings
+from apps.api.services.observability import reset_metrics
 
 # Allow running `pytest` without editable install by ensuring repo root is on sys.path.
 ROOT = Path(__file__).resolve().parents[1]
@@ -40,6 +41,13 @@ def _security_defaults(monkeypatch):
     get_settings.cache_clear()
     yield
     get_settings.cache_clear()
+
+
+@pytest.fixture(autouse=True)
+def _reset_observability_state():
+    reset_metrics()
+    yield
+    reset_metrics()
 
 
 @pytest.fixture
