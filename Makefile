@@ -1,4 +1,4 @@
-.PHONY: setup test run quick-gates full-suite high-sensitivity regression verify-manifest lint
+.PHONY: setup test run worker quick-gates full-suite high-sensitivity regression verify-manifest lint
 
 setup:
 	python -m venv .venv
@@ -9,6 +9,10 @@ test:
 
 run:
 	. .venv/bin/activate && uvicorn apps.api.main:app --reload --port 8000
+
+# Background worker for queued runs (use with RUN_EXECUTOR_MODE=external)
+worker:
+	. .venv/bin/activate && python scripts/worker_run_jobs.py
 
 # CI/local fast check. Override model: `make quick-gates MODEL=...`
 quick-gates:
