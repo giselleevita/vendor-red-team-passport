@@ -23,6 +23,10 @@ router = APIRouter()
 templates = Jinja2Templates(directory=str(Path(__file__).resolve().parents[1] / "templates"))
 
 
+def _bad_run_id(e: ValueError) -> HTTPException:
+    return HTTPException(status_code=400, detail=str(e))
+
+
 @router.get("/", response_class=HTMLResponse)
 def landing(request: Request) -> HTMLResponse:
     settings = get_settings()
@@ -72,11 +76,17 @@ def runs_list(request: Request) -> HTMLResponse:
 
 @router.get("/runs/{run_id}", response_class=HTMLResponse)
 def run_detail(run_id: str) -> FileResponse:
-    html_path = run_dir(run_id) / "passport.html"
+    try:
+        html_path = run_dir(run_id) / "passport.html"
+    except ValueError as e:
+        raise _bad_run_id(e) from e
     if html_path.exists():
         return FileResponse(html_path, media_type="text/html")
 
-    passport = load_passport(run_id)
+    try:
+        passport = load_passport(run_id)
+    except ValueError as e:
+        raise _bad_run_id(e) from e
     if passport is None:
         raise HTTPException(status_code=404, detail="run_id not found")
 
@@ -87,8 +97,11 @@ def run_detail(run_id: str) -> FileResponse:
 
 @router.get("/runs/{run_id}/claims", response_class=HTMLResponse)
 def run_claims(request: Request, run_id: str) -> HTMLResponse:
-    meta = load_run_meta(run_id) or {}
-    passport = load_passport(run_id)
+    try:
+        meta = load_run_meta(run_id) or {}
+        passport = load_passport(run_id)
+    except ValueError as e:
+        raise _bad_run_id(e) from e
     if passport is None:
         raise HTTPException(status_code=404, detail="run_id not found")
 
@@ -135,8 +148,19 @@ def compare_runs(
         )
 
     a, b = selected
-    pa = load_passport(a)
-    pb = load_passport(b)
+    try:
+        pa = load_passport(a)
+        pb = load_passport(b)
+    except ValueError:
+        return templates.TemplateResponse(
+            "compare.html.j2",
+            {
+                "request": request,
+                "available": available,
+                "error": "One or both run_id values are invalid.",
+                "comparison": None,
+            },
+        )
     if pa is None or pb is None:
         return templates.TemplateResponse(
             "compare.html.j2",

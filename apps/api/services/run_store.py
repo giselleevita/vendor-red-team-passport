@@ -36,8 +36,21 @@ def runs_dir() -> Path:
     return reports_dir() / "runs"
 
 
+def validate_run_id(run_id: str) -> str:
+    rid = (run_id or "").strip()
+    if not rid:
+        raise ValueError("invalid run_id: empty")
+    if len(rid) > 120:
+        raise ValueError("invalid run_id: too long")
+    if any(ch in rid for ch in ("/", "\\", "\x00")):
+        raise ValueError("invalid run_id: contains forbidden path characters")
+    if any(ord(ch) < 32 for ch in rid):
+        raise ValueError("invalid run_id: contains control characters")
+    return rid
+
+
 def run_dir(run_id: str) -> Path:
-    return runs_dir() / run_id
+    return runs_dir() / validate_run_id(run_id)
 
 
 def cases_dir(run_id: str) -> Path:
@@ -119,7 +132,15 @@ def list_run_ids() -> list[str]:
     root = runs_dir()
     if not root.exists():
         return []
-    return sorted([p.name for p in root.iterdir() if p.is_dir()])
+    out = []
+    for p in root.iterdir():
+        if not p.is_dir():
+            continue
+        try:
+            out.append(validate_run_id(p.name))
+        except ValueError:
+            continue
+    return sorted(out)
 
 
 def load_run_meta(run_id: str) -> dict | None:
