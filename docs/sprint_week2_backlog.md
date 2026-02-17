@@ -6,7 +6,7 @@ Status: `in-progress`
 - `W2-01` done: Async job queue for runs (`POST /runs` + `GET /runs/jobs/{job_id}`)
 - `W2-02` done: DB-backed job metadata via repository abstraction (`file|sql`)
 - `W2-03` done: Worker separation via external executor mode + worker script
-- `W2-04` pending: Failure handling (retry policy + dead-letter)
+- `W2-04` done: Failure handling with retries, backoff, dead-letter state
 - `W2-05` pending: Job cancellation API
 
 ## `W2-01` Ergebnis
@@ -29,5 +29,12 @@ Status: `in-progress`
   - API path remains queue-only in external mode
 
 ## Nächster geplanter Slice (`W2-04`)
-- Retry policy and dead-letter handling for failed jobs.
-- Add worker backoff controls and max-attempt fields on job metadata.
+- Implemented:
+  - `attempt_count`, `max_attempts`, `next_attempt_at`
+  - exponential backoff with configurable caps
+  - terminal `dead_letter` status after final failed attempt
+  - worker only executes queued jobs that are ready by `next_attempt_at`
+
+## Nächster geplanter Slice (`W2-05`)
+- Job cancellation endpoint and cancellation-safe worker behavior.
+- Cancelled jobs must never transition back to running.

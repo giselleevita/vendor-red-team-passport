@@ -26,6 +26,9 @@ class Settings(BaseSettings):
     job_store_backend: str = "file"
     job_store_dsn: str = ""
     run_executor_mode: str = "inline"
+    run_job_max_attempts: int = 3
+    run_job_backoff_base_seconds: float = 1.0
+    run_job_backoff_max_seconds: float = 30.0
 
 
 @lru_cache(maxsize=1)
