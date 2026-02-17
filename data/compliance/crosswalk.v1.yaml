@@ -1,0 +1,12 @@
+eu_ai_act:
+  - control: traceability_transparency
+    linked_classes: [A4, A5, A6, A9]
+nis2:
+  - control: risk_and_incident_measures
+    linked_classes: [A1, A2, A3, A7]
+iso_27001:
+  - control: access_control_and_secure_operations
+    linked_classes: [A4, A5, A6, A10]
+nato_ai_principles:
+  - control: reliability_governability
+    linked_classes: [A1, A2, A3, A4, A5]

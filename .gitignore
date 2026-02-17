@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+.pytest_cache/
+.env
+.DS_Store
+reports/passports/*.html
+reports/benchmarks/*
+!reports/benchmarks/.gitkeep

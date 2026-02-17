@@ -1,0 +1,102 @@
+{% extends "base.html.j2" %}
+
+{% block title %}Claims vs Evidence{% endblock %}
+
+{% block content %}
+  <div class="top">
+    <h1>Claims vs Evidence</h1>
+    <span class="meta">
+      <a href="/runs/{{ matrix.run_id }}">Passport</a> ·
+      <a href="/runs">Runs</a> ·
+      <a href="/compare">Compare</a>
+    </span>
+  </div>
+
+  <div class="card" style="margin-top:14px;">
+    <div class="k">Run context</div>
+    <div style="height:8px;"></div>
+    <div class="small">run_id=<code>{{ matrix.run_id }}</code></div>
+    <div class="small">model=<code>{{ matrix.model }}</code></div>
+    <div class="small">created=<code>{{ matrix.created_at_utc }}</code> · suite=<code>{{ matrix.suite_version }}</code></div>
+    <div class="small">generated=<code>{{ matrix.generated_at_utc }}</code></div>
+    <div class="small" style="margin-top:10px;">
+      Facts only: computed from this run's stored artifacts. Evidence excerpts are sanitized before persistence.
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:14px;">
+    <div class="k">Headline suggestions (derived)</div>
+    <div style="height:8px;"></div>
+    <ul style="margin:0; padding-left:18px;">
+      {% for h in matrix.headlines %}
+        <li class="small">{{ h }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <div class="card" style="margin-top:14px;">
+    <div class="k">Claim matrix</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Claim category</th>
+          <th>Class</th>
+          <th>Status</th>
+          <th>Confidence</th>
+          <th>Evidence</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in matrix.claims %}
+        <tr>
+          <td>
+            <div><strong>{{ c.title }}</strong></div>
+            <div class="small">{{ c.why_it_matters }}</div>
+          </td>
+          <td><code>{{ c.attack_class }}</code></td>
+          <td>
+            {% if c.status == "SUPPORTED" %}
+              <span class="pill ok">SUPPORTED</span>
+            {% elif c.status == "REFUTED" %}
+              <span class="pill bad">REFUTED</span>
+            {% elif c.status == "CONDITIONAL" %}
+              <span class="pill warn">CONDITIONAL</span>
+            {% else %}
+              <span class="pill warn">NOT EVALUATED</span>
+            {% endif %}
+            <div class="small">{{ c.failed }}/{{ c.total }} failed</div>
+          </td>
+          <td>
+            <span class="pill">{{ c.confidence }}%</span>
+          </td>
+          <td>
+            {% if c.top_evidence %}
+              <div class="small">Top evidence:</div>
+              <ul style="margin:6px 0 0; padding-left:18px;">
+                {% for e in c.top_evidence %}
+                  <li class="small">
+                    <a href="{{ e.evidence_url }}">{{ e.case_id }}</a>
+                    <span class="small">actual=<code>{{ e.actual }}</code></span>
+                    {% if e.latency_ms is not none %}
+                      <span class="small">latency_ms=<code>{{ e.latency_ms }}</code></span>
+                    {% endif %}
+                    {% if e.excerpt %}
+                      <div class="small"><code>{{ e.excerpt }}</code></div>
+                    {% endif %}
+                  </li>
+                {% endfor %}
+              </ul>
+            {% else %}
+              <span class="small">No failing evidence in this category.</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <div class="small" style="margin-top:10px;">
+      Tip: share the evidence JSON links under <code>/reports/runs/{{ matrix.run_id }}/cases/</code>.
+    </div>
+  </div>
+{% endblock %}
+

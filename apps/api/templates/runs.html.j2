@@ -1,0 +1,65 @@
+{% extends "base.html.j2" %}
+
+{% block title %}Runs{% endblock %}
+
+{% block content %}
+  <div class="top">
+    <h1>Runs</h1>
+    <span class="meta"><a href="/">Start a run</a> · <a href="/compare">Compare</a></span>
+  </div>
+
+  <div class="card" style="margin-top:14px;">
+    <div class="k">Stored under <code>reports/runs/</code></div>
+    {% if not runs %}
+      <div style="height:10px;"></div>
+      <div class="small">No runs found yet.</div>
+    {% else %}
+      <table>
+        <thead>
+          <tr>
+            <th>Run</th>
+            <th>Created</th>
+            <th>Model</th>
+            <th>Profile</th>
+            <th>Only classes</th>
+            <th>Cases</th>
+            <th>Gate</th>
+            <th>Overall</th>
+            <th>Critical</th>
+            <th>Links</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in runs %}
+          <tr>
+            <td><a href="/runs/{{ r.run_id }}">{{ r.run_id }}</a></td>
+            <td class="small">{{ r.created_at_utc }}</td>
+            <td class="small">{{ r.model }}</td>
+            <td class="small">{{ r.profile }}</td>
+            <td class="small">{{ r.only_classes | tojson }}</td>
+            <td>{{ r.enabled_case_count }}</td>
+            <td>
+              {% if r.gate == "PASS" %}
+                <span class="pill ok">PASS</span>
+              {% elif r.gate == "FAIL" %}
+                <span class="pill bad">FAIL</span>
+              {% else %}
+                <span class="pill warn">{{ r.gate }}</span>
+              {% endif %}
+            </td>
+            <td>{{ r.overall_score }}</td>
+            <td>{{ r.critical_failures }}</td>
+            <td class="small">
+              <a href="/runs/{{ r.run_id }}">passport</a> ·
+              <a href="/runs/{{ r.run_id }}/claims">claims</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <div class="small" style="margin-top:10px;">
+        Tip: open <code>/compare?run_id=...</code> to view deltas.
+      </div>
+    {% endif %}
+  </div>
+{% endblock %}
