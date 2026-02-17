@@ -4,7 +4,7 @@ Status: `in-progress`
 
 ## Sprint-Status (laufend)
 - `W2-01` done: Async job queue for runs (`POST /runs` + `GET /runs/jobs/{job_id}`)
-- `W2-02` pending: DB-backed job metadata (PostgreSQL)
+- `W2-02` done: DB-backed job metadata via repository abstraction (`file|sql`)
 - `W2-03` pending: Worker separation (Celery/Redis)
 - `W2-04` pending: Failure handling (retry policy + dead-letter)
 - `W2-05` pending: Job cancellation API
@@ -16,6 +16,12 @@ Status: `in-progress`
 - Test coverage added in `tests/api/test_run_jobs.py`.
 
 ## Nächster geplanter Slice (`W2-02`)
-- Introduce `jobs` relational schema in PostgreSQL.
-- Persist and query job states via repository abstraction.
-- Keep file-based backend as temporary fallback via feature flag.
+- Implemented:
+  - `JOB_STORE_BACKEND=file|sql`
+  - `JOB_STORE_DSN=sqlite:///...` and `postgresql://...`
+  - relational `jobs` schema with upsert/read paths
+  - file backend retained as compatibility fallback
+
+## Nächster geplanter Slice (`W2-03`)
+- Worker separation with Celery/Redis.
+- Keep current in-process background task behind feature flag for rollback.

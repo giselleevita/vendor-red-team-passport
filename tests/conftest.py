@@ -9,6 +9,7 @@ import time
 import pytest
 
 from apps.api.config import get_settings
+from apps.api.services.jobs import get_job_store
 from apps.api.services.observability import reset_metrics
 
 # Allow running `pytest` without editable install by ensuring repo root is on sys.path.
@@ -39,8 +40,10 @@ def _security_defaults(monkeypatch):
     monkeypatch.setenv("AUTH_DEFAULT_TENANT_ID", "tenant-default")
     monkeypatch.setenv("AUTH_LEGACY_DEFAULT_TENANT_ID", "tenant-legacy")
     get_settings.cache_clear()
+    get_job_store.cache_clear()
     yield
     get_settings.cache_clear()
+    get_job_store.cache_clear()
 
 
 @pytest.fixture(autouse=True)
