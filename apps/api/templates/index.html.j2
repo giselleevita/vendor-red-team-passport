@@ -1,0 +1,105 @@
+{% extends "base.html.j2" %}
+
+{% block title %}Vendor Red-Team Passport{% endblock %}
+
+{% block content %}
+  <div class="top">
+    <h1>Vendor Red-Team Passport</h1>
+    <span class="meta">Local-only. Sanitized evidence. Reports served at <code>/reports</code>.</span>
+  </div>
+
+  <div class="row" style="margin-top:14px;">
+    <div class="card">
+      <div class="k">Start a run</div>
+      <div style="height:8px;"></div>
+
+      <label class="k" for="model">Model</label>
+      <input id="model" placeholder="{{ default_model }}" />
+      <div style="height:10px;"></div>
+
+      <div class="row">
+        <div>
+          <label class="k" for="profile">Profile</label>
+          <select id="profile">
+            {% for p in profiles %}
+              <option value="{{ p.name }}" {% if p.name == "quick_gates" %}selected{% endif %}>
+                {{ p.name }}{% if p.description %} — {{ p.description }}{% endif %}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div>
+          <label class="k" for="a9_mode">A9 mode</label>
+          <select id="a9_mode">
+            <option value="" selected>profile default</option>
+            <option value="auto">auto</option>
+            <option value="compat">compat</option>
+            <option value="strict">strict</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="height:12px;"></div>
+      <button id="runBtn">Run</button>
+      <span id="status" class="small" style="margin-left:10px;"></span>
+      <div id="err" class="small err" style="margin-top:10px;"></div>
+      <div class="small" style="margin-top:10px;">
+        Use <code>quick_gates</code> for fast iteration. Full suite can be slow depending on pacing/rate limits.
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="k">Browse</div>
+      <div style="height:8px;"></div>
+      <div><a href="/runs">Runs list</a></div>
+      <div style="height:6px;"></div>
+      <div><a href="/compare">Compare runs</a></div>
+      <div style="height:6px;"></div>
+      <div><a href="/profiles">Profiles (JSON)</a></div>
+      <div style="height:12px;"></div>
+      <div class="k">Artifacts</div>
+      <div class="small">Each run writes:</div>
+      <div class="small"><code>reports/runs/&lt;run_id&gt;/run.json</code></div>
+      <div class="small"><code>reports/runs/&lt;run_id&gt;/passport.json</code></div>
+      <div class="small"><code>reports/runs/&lt;run_id&gt;/passport.html</code></div>
+      <div class="small"><code>reports/runs/&lt;run_id&gt;/cases/*.json</code> (sanitized)</div>
+    </div>
+  </div>
+
+  <script>
+    const el = (id) => document.getElementById(id);
+
+    el("runBtn").addEventListener("click", async () => {
+      el("err").textContent = "";
+      el("status").textContent = "Starting...";
+
+      const model = (el("model").value || "").trim();
+      const profile = (el("profile").value || "").trim();
+      const a9_mode = (el("a9_mode").value || "").trim();
+
+      const body = {
+        profile: profile || null,
+        model: model || null,
+        a9_mode: a9_mode || null
+      };
+
+      try {
+        const resp = await fetch("/runs", {
+          method: "POST",
+          headers: {"Content-Type":"application/json"},
+          body: JSON.stringify(body)
+        });
+        const data = await resp.json().catch(() => ({}));
+        if (!resp.ok) {
+          throw new Error(data.detail || ("HTTP " + resp.status));
+        }
+        const runId = data.run_id;
+        el("status").textContent = "Done. Opening report...";
+        window.location.href = "/runs/" + encodeURIComponent(runId);
+      } catch (e) {
+        el("status").textContent = "";
+        el("err").textContent = String(e && e.message ? e.message : e);
+      }
+    });
+  </script>
+{% endblock %}

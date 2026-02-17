@@ -1,0 +1,9 @@
+name: full_suite
+description: Full regression suite (all enabled cases)
+suite_path: data/cases/cases.v1.json
+only_classes: []
+a9_mode: auto
+params:
+  temperature: 0
+  max_tokens: 256
+

@@ -1,0 +1,118 @@
+{% extends "base.html.j2" %}
+
+{% block title %}Compare{% endblock %}
+
+{% block content %}
+  <div class="top">
+    <h1>Compare Runs</h1>
+    <span class="meta"><a href="/">Start a run</a> · <a href="/runs">Runs list</a></span>
+  </div>
+
+  <div class="card" style="margin-top:14px;">
+    <div class="k">Pick two run IDs</div>
+    <div style="height:10px;"></div>
+    <form method="get" action="/compare">
+      <div class="row">
+        <div>
+          <label class="k" for="run_a">Run A</label>
+          <select id="run_a" name="run_id">
+            {% for r in available %}
+              <option value="{{ r }}">{{ r }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div>
+          <label class="k" for="run_b">Run B</label>
+          <select id="run_b" name="run_id">
+            {% for r in available %}
+              <option value="{{ r }}">{{ r }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+      <div style="height:12px;"></div>
+      <button type="submit">Compare</button>
+      {% if error %}
+        <div style="height:10px;"></div>
+        <div class="small err">{{ error }}</div>
+      {% endif %}
+    </form>
+  </div>
+
+  {% if comparison %}
+    <div class="row" style="margin-top:14px;">
+      <div class="card">
+        <div class="k">Run A</div>
+        <div style="height:6px;"></div>
+        <div><a href="/runs/{{ comparison.a.run_id }}">{{ comparison.a.run_id }}</a></div>
+        <div class="small">model={{ comparison.a.model }}</div>
+        <div class="small">created={{ comparison.a.created_at_utc }}</div>
+        <div style="height:10px;"></div>
+        <span class="pill {{ 'ok' if comparison.a.summary.release_gate=='PASS' else 'bad' }}">Gate: {{ comparison.a.summary.release_gate }}</span>
+      </div>
+      <div class="card">
+        <div class="k">Run B</div>
+        <div style="height:6px;"></div>
+        <div><a href="/runs/{{ comparison.b.run_id }}">{{ comparison.b.run_id }}</a></div>
+        <div class="small">model={{ comparison.b.model }}</div>
+        <div class="small">created={{ comparison.b.created_at_utc }}</div>
+        <div style="height:10px;"></div>
+        <span class="pill {{ 'ok' if comparison.b.summary.release_gate=='PASS' else 'bad' }}">Gate: {{ comparison.b.summary.release_gate }}</span>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:14px;">
+      <div class="k">Summary deltas (B - A)</div>
+      <table>
+        <thead><tr><th>Metric</th><th>A</th><th>B</th><th>Delta</th></tr></thead>
+        <tbody>
+          {% for d in comparison.summary_deltas %}
+            <tr>
+              <td>{{ d.key }}</td>
+              <td>{{ d.a }}</td>
+              <td>{{ d.b }}</td>
+              <td>{{ d.delta }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card" style="margin-top:14px;">
+      <div class="k">Per-class pass-rate deltas (B - A)</div>
+      <table>
+        <thead><tr><th>Class</th><th>A pass</th><th>B pass</th><th>Delta</th><th>A status</th><th>B status</th></tr></thead>
+        <tbody>
+          {% for c in comparison.class_deltas %}
+            <tr>
+              <td>{{ c.attack_class }}</td>
+              <td>{{ c.a_pass_rate }}</td>
+              <td>{{ c.b_pass_rate }}</td>
+              <td>{{ c.delta }}</td>
+              <td>
+                {% if c.a_status == "PASS" %}
+                  <span class="pill ok">PASS</span>
+                {% elif c.a_status == "FAIL" %}
+                  <span class="pill bad">FAIL</span>
+                {% else %}
+                  <span class="pill warn">{{ c.a_status }}</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if c.b_status == "PASS" %}
+                  <span class="pill ok">PASS</span>
+                {% elif c.b_status == "FAIL" %}
+                  <span class="pill bad">FAIL</span>
+                {% else %}
+                  <span class="pill warn">{{ c.b_status }}</span>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <div class="small" style="margin-top:10px;">Gating classes (A4/A5/A6/A9) are shown first.</div>
+    </div>
+  {% endif %}
+{% endblock %}
+
