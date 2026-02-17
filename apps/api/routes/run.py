@@ -112,6 +112,9 @@ def create_run(
             "only_classes": only_classes or [],
             "suite_path": suite_path,
             "params": params or {},
+            "attempt_count": 0,
+            "max_attempts": max(1, int(settings.run_job_max_attempts)),
+            "next_attempt_at": None,
         },
     )
     mode = (settings.run_executor_mode or "inline").strip().lower()

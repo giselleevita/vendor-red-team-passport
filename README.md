@@ -44,6 +44,7 @@ Job metadata storage:
 Run execution mode:
 - `RUN_EXECUTOR_MODE=inline` (default; executes queued jobs in-process)
 - `RUN_EXECUTOR_MODE=external` (API only queues; run `python scripts/worker_run_jobs.py`)
+- Retry/dead-letter controls: `RUN_JOB_MAX_ATTEMPTS`, `RUN_JOB_BACKOFF_BASE_SECONDS`, `RUN_JOB_BACKOFF_MAX_SECONDS`
 
 ### POST /runs body
 ```json

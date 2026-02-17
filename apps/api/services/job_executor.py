@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
+from apps.api.config import get_settings
 from apps.api.services.jobs import load_job, update_job
 from apps.api.services.orchestrator import run_orchestrated
 from apps.api.services.profiles import load_profile
@@ -17,11 +18,25 @@ def execute_job(job_id: str) -> dict:
         raise FileNotFoundError(f"job not found: {job_id}")
 
     status = str(job.get("status", "")).strip()
-    if status in {"succeeded", "failed"}:
+    if status in {"succeeded", "dead_letter"}:
         return job
 
+    settings = get_settings()
+    attempts = int(job.get("attempt_count", 0) or 0)
+    max_attempts = int(job.get("max_attempts", settings.run_job_max_attempts) or settings.run_job_max_attempts)
+    max_attempts = max(1, max_attempts)
+    attempt_no = attempts + 1
+
     if status != "running":
-        job = update_job(job_id, {"status": "running", "started_at_utc": _utc_now_iso()})
+        job = update_job(
+            job_id,
+            {
+                "status": "running",
+                "started_at_utc": _utc_now_iso(),
+                "attempt_count": attempt_no,
+                "next_attempt_at": None,
+            },
+        )
 
     try:
         profile_ref = str(job.get("profile_ref", "")).strip()
@@ -44,15 +59,31 @@ def execute_job(job_id: str) -> dict:
             {
                 "status": "succeeded",
                 "finished_at_utc": _utc_now_iso(),
+                "error": "",
             },
         )
     except Exception as e:  # noqa: BLE001
+        err = str(e)[:240]
+        if attempt_no < max_attempts:
+            sleep_for = min(
+                float(settings.run_job_backoff_max_seconds),
+                float(settings.run_job_backoff_base_seconds) * (2 ** max(0, attempt_no - 1)),
+            )
+            eta = (datetime.now(tz=timezone.utc) + timedelta(seconds=float(sleep_for))).isoformat()
+            return update_job(
+                job_id,
+                {
+                    "status": "queued",
+                    "error": err,
+                    "next_attempt_at": eta,
+                },
+            )
         return update_job(
             job_id,
             {
-                "status": "failed",
+                "status": "dead_letter",
                 "finished_at_utc": _utc_now_iso(),
-                "error": str(e)[:240],
+                "error": err,
+                "next_attempt_at": None,
             },
         )
-

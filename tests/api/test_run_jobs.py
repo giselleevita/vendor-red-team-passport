@@ -72,3 +72,69 @@ def test_execute_job_marks_success(monkeypatch, tmp_path: Path) -> None:
     assert after["status"] == "succeeded"
     loaded = load_job("job-worker-1")
     assert loaded is not None and loaded["status"] == "succeeded"
+
+
+def test_execute_job_requeues_on_failure_before_max_attempts(monkeypatch, tmp_path: Path) -> None:
+    import apps.api.services.job_executor as job_exec
+
+    monkeypatch.setenv("VENDOR_RTP_REPORTS_DIR", str(tmp_path / "reports"))
+    monkeypatch.setenv("RUN_JOB_MAX_ATTEMPTS", "3")
+    monkeypatch.setenv("RUN_JOB_BACKOFF_BASE_SECONDS", "0.01")
+    monkeypatch.setenv("RUN_JOB_BACKOFF_MAX_SECONDS", "0.05")
+    get_settings.cache_clear()
+    get_job_store.cache_clear()
+
+    def _fail_run(**kwargs):  # noqa: ANN003
+        raise RuntimeError("transient failure")
+
+    monkeypatch.setattr(job_exec, "run_orchestrated", _fail_run)
+    create_job(
+        "job-worker-retry",
+        {
+            "run_id": "run-worker-retry",
+            "tenant_id": "tenant-a",
+            "model": "x",
+            "a9_mode": "auto",
+            "only_classes": [],
+            "suite_path": "data/cases/cases.v1.json",
+            "params": {},
+            "attempt_count": 0,
+            "max_attempts": 3,
+        },
+    )
+    after = execute_job("job-worker-retry")
+    assert after["status"] == "queued"
+    assert int(after["attempt_count"]) == 1
+    assert isinstance(after.get("next_attempt_at"), str) and after["next_attempt_at"]
+
+
+def test_execute_job_moves_to_dead_letter_on_final_failure(monkeypatch, tmp_path: Path) -> None:
+    import apps.api.services.job_executor as job_exec
+
+    monkeypatch.setenv("VENDOR_RTP_REPORTS_DIR", str(tmp_path / "reports"))
+    monkeypatch.setenv("RUN_JOB_MAX_ATTEMPTS", "2")
+    get_settings.cache_clear()
+    get_job_store.cache_clear()
+
+    def _fail_run(**kwargs):  # noqa: ANN003
+        raise RuntimeError("permanent failure")
+
+    monkeypatch.setattr(job_exec, "run_orchestrated", _fail_run)
+    create_job(
+        "job-worker-dead",
+        {
+            "run_id": "run-worker-dead",
+            "tenant_id": "tenant-a",
+            "model": "x",
+            "a9_mode": "auto",
+            "only_classes": [],
+            "suite_path": "data/cases/cases.v1.json",
+            "params": {},
+            "attempt_count": 1,
+            "max_attempts": 2,
+        },
+    )
+    after = execute_job("job-worker-dead")
+    assert after["status"] == "dead_letter"
+    assert after.get("finished_at_utc")
+    assert "permanent failure" in str(after.get("error", ""))
