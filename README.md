@@ -26,7 +26,8 @@ Open:
 
 ## API Endpoints
 - `GET /health`
-- `POST /runs` (JSON body)
+- `POST /runs` (JSON body; queues async job)
+- `GET /runs/jobs/{job_id}` (job status)
 - `GET /passports/{run_id}`
 - `GET /profiles` (available run profiles)
 - `GET /metrics` (auditor/admin; `fmt=prom|json`)
