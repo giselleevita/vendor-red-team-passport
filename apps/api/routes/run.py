@@ -3,11 +3,13 @@ from __future__ import annotations
 import uuid
 from typing import Literal
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 
 from pydantic import BaseModel, Field
 
 from apps.api.config import get_settings
+from apps.api.services.audit import log_audit_event
+from apps.api.services.auth import RequestContext, hash_subject, require_roles
 from apps.api.services.profiles import load_profile
 from apps.api.services.orchestrator import run_orchestrated
 
@@ -25,14 +27,36 @@ class RunCreateRequest(BaseModel):
 
 
 @router.post("/runs")
-def create_run(req: RunCreateRequest) -> dict[str, str]:
+def create_run(
+    req: RunCreateRequest,
+    request: Request,
+    ctx: RequestContext = Depends(require_roles("operator", "admin")),
+) -> dict[str, str]:
     settings = get_settings()
     run_id = str(uuid.uuid4())
     try:
         profile = load_profile(req.profile, allow_external_paths=False) if req.profile else None
     except FileNotFoundError as e:
+        log_audit_event(
+            action="run.create",
+            result="deny",
+            actor=hash_subject(ctx.subject),
+            tenant_id=ctx.tenant_id,
+            resource=request.url.path,
+            detail=str(e),
+            method=request.method,
+        )
         raise HTTPException(status_code=404, detail=str(e)) from e
     except Exception as e:  # noqa: BLE001
+        log_audit_event(
+            action="run.create",
+            result="deny",
+            actor=hash_subject(ctx.subject),
+            tenant_id=ctx.tenant_id,
+            resource=request.url.path,
+            detail=str(e),
+            method=request.method,
+        )
         raise HTTPException(status_code=400, detail=str(e)) from e
 
     model = (req.model or "").strip() or (profile.get("model") if profile else "") or settings.default_model
@@ -77,9 +101,19 @@ def create_run(req: RunCreateRequest) -> dict[str, str]:
         only_classes=only_classes,
         a9_mode=a9_mode,
         params=params,
+        tenant_id=ctx.tenant_id,
         run_id=run_id,
         suite_path=suite_path,
         profile=profile,
+    )
+    log_audit_event(
+        action="run.create",
+        result="allow",
+        actor=hash_subject(ctx.subject),
+        tenant_id=ctx.tenant_id,
+        resource=f"/runs/{run_id}",
+        detail="run created",
+        method=request.method,
     )
     return {
         "run_id": run_id,

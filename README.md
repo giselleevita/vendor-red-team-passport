@@ -30,6 +30,8 @@ Open:
 - `GET /passports/{run_id}`
 - `GET /profiles` (available run profiles)
 
+Note: all endpoints except `GET /health` require bearer authentication.
+
 ### POST /runs body
 ```json
 {

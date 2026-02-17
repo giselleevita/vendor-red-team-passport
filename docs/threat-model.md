@@ -22,6 +22,13 @@ This threat model covers the local operator workstation running the FastAPI serv
 - Accidental insider leakage via sharing artifacts (copy/paste of evidence excerpts)
 
 ## Top Risks and Mitigations
+### 0) Unauthorized API access (missing/weak identity controls)
+- Risk: endpoints can be invoked without identity, allowing data exposure or unauthorized runs.
+- Mitigations:
+  - Enforce bearer-token authentication for non-health routes.
+  - Enforce role-based authorization (viewer/auditor/operator/admin).
+  - Log allow/deny audit events for sensitive actions.
+
 ### 1) Secret leakage (API keys, tokens) into artifacts
 - Risk: prompts/responses could contain secret-like content; logs/artifacts could leak it.
 - Mitigations:
@@ -53,3 +60,10 @@ This threat model covers the local operator workstation running the FastAPI serv
 - Mitigations:
   - Conservative mode selection: default `a9_mode=auto`, only use strict if enforceability probe passes.
   - Treat non-JSON as failure for A9 cases.
+
+### 6) Cross-tenant artifact exposure
+- Risk: a user from tenant A can read runs from tenant B.
+- Mitigations:
+  - Tenant id is recorded per run metadata.
+  - Read endpoints enforce tenant ownership checks.
+  - Legacy runs must be backfilled via migration before broad multi-tenant rollout.

@@ -14,6 +14,15 @@ class Settings(BaseSettings):
     request_max_retries: int = 6
     request_retry_backoff_base_seconds: float = 1.0
     request_retry_max_sleep_seconds: float = 20.0
+    auth_enabled: bool = True
+    auth_jwt_hs256_secret: str = ""
+    auth_jwt_issuer: str = ""
+    auth_jwt_audience: str = ""
+    auth_roles_claim: str = "roles"
+    auth_tenant_claim: str = "tenant_id"
+    auth_default_tenant_id: str = "default"
+    auth_legacy_default_tenant_id: str = "legacy"
+    rbac_enabled: bool = True
 
 
 @lru_cache(maxsize=1)

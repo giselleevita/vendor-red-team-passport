@@ -10,3 +10,4 @@ __pycache__/
 reports/passports/*.html
 reports/benchmarks/*
 !reports/benchmarks/.gitkeep
+reports/audit/*.log

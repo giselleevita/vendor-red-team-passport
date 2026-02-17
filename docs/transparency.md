@@ -26,6 +26,12 @@
   - rate limiting/pacing behavior
   - the chosen case suite version
 
+## Access Control Model
+- Non-health API endpoints require bearer token authentication.
+- Role-based authorization gates write vs read operations.
+- Run artifacts are tenant-scoped; cross-tenant access is denied.
+- Sensitive API actions emit structured audit events under `reports/audit/events.log`.
+
 ## Safety and Authorization
 - Offensive scenarios are simulated strictly for authorized lab testing and defensive vendor due diligence.
 - Do not use this tool to generate or deploy offensive malware, exploit payloads, or operational intrusion guidance.
