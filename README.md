@@ -1,5 +1,9 @@
 # AI Vendor Red-Team Passport
 
+[![CI](https://github.com/giselleevita/vendor-red-team-passport/actions/workflows/ci.yml/badge.svg)](https://github.com/giselleevita/vendor-red-team-passport/actions/workflows/ci.yml)
+![Python](https://img.shields.io/badge/python-3.11+-blue)
+![Version](https://img.shields.io/badge/version-0.1.0-green)
+
 Defense-oriented, analyst-first security evaluation tool for LLM APIs.
 
 ## MVP Scope
