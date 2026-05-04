@@ -1,8 +1,10 @@
 # AI Vendor Red-Team Passport
 
 [![CI](https://github.com/giselleevita/vendor-red-team-passport/actions/workflows/ci.yml/badge.svg)](https://github.com/giselleevita/vendor-red-team-passport/actions/workflows/ci.yml)
+[![Deploy](https://github.com/giselleevita/vendor-red-team-passport/actions/workflows/deploy.yml/badge.svg)](https://github.com/giselleevita/vendor-red-team-passport/actions/workflows/deploy.yml)
+![Version](https://img.shields.io/badge/version-1.0.0-green)
 ![Python](https://img.shields.io/badge/python-3.11+-blue)
-![Version](https://img.shields.io/badge/version-0.1.0-green)
+![License](https://img.shields.io/badge/license-proprietary-lightgrey)
 
 Defense-oriented, analyst-first security evaluation tool for LLM APIs.
 
@@ -12,7 +14,7 @@ Defense-oriented, analyst-first security evaluation tool for LLM APIs.
 - Deterministic scoring gates
 - Passport report output in JSON + HTML (shareable)
 - Sanitized-only evidence pack per run (no raw model outputs persisted)
-- Minimal FastAPI HTML UI (runs list + compare)
+- Web dashboard at `/ui`
 
 ## Quick Start
 ```bash
@@ -25,77 +27,21 @@ uvicorn apps.api.main:app --reload --port 8000
 
 Open:
 - `http://127.0.0.1:8000/` (UI)
-- `http://127.0.0.1:8000/runs` (runs list)
-- `http://127.0.0.1:8000/compare` (compare)
+- `http://127.0.0.1:8000/api/v1/health` (health)
 
 ## API Endpoints
-- `GET /health`
-- `POST /runs` (JSON body; queues async job)
-- `GET /runs/jobs/{job_id}` (job status)
+- `GET /api/v1/health`
+- `POST /runs`
+- `GET /runs/jobs/{job_id}`
 - `GET /passports/{run_id}`
-- `GET /profiles` (available run profiles)
-- `GET /metrics` (auditor/admin; `fmt=prom|json`)
+- `GET /profiles`
+- `GET /metrics`
 
-Note: all endpoints except `GET /health` require bearer authentication.
+## Deployment
 
-Error responses use a consistent JSON contract:
-`{"code":"...", "message":"...", "correlation_id":"...", "detail": ...}`
+See [`SECRETS_SETUP.md`](SECRETS_SETUP.md) for Railway variables and [`ops/runbook.md`](ops/runbook.md) for production ops.
 
-Job metadata storage:
-- `JOB_STORE_BACKEND=file` (default, JSON under `reports/jobs/`)
-- `JOB_STORE_BACKEND=sql` + `JOB_STORE_DSN=sqlite:///...` or `postgresql://...`
-
-Run execution mode:
-- `RUN_EXECUTOR_MODE=inline` (default; executes queued jobs in-process)
-- `RUN_EXECUTOR_MODE=external` (API only queues; run `python scripts/worker_run_jobs.py`)
-- Retry/dead-letter controls: `RUN_JOB_MAX_ATTEMPTS`, `RUN_JOB_BACKOFF_BASE_SECONDS`, `RUN_JOB_BACKOFF_MAX_SECONDS`
-
-### POST /runs body
-```json
-{
-  "profile": "quick_gates",
-  "model": "moonshotai/Kimi-K2-Instruct",
-  "a9_mode": "auto",
-  "params": { "temperature": 0, "max_tokens": 256 }
-}
-```
-
-Profiles live under `profiles/`:
-- `profiles/quick_gates.yaml`
-- `profiles/full_suite.yaml`
-- `profiles/high_sensitivity.yaml`
-
-### Run Artifacts
-Each run writes to `reports/runs/<run_id>/`:
-- `run.json` (metadata)
-- `passport.json` (machine-readable decision evidence)
-- `passport.html` (shareable report)
-- `policy.json` (explicit gating policy)
-- `coverage.json` (heuristic OWASP/NIST crosswalk for communication)
-- `compliance.json` (control mapping used in the run)
-- `manifest.json` (sha256 list for run artifacts, optional HMAC signature)
-- `cases/*.json` (sanitized per-case evidence)
-
-Evidence is served locally at `GET /reports/...` (StaticFiles mount).
-
-Verify manifest integrity:
-```bash
-python scripts/verify_manifest.py --run-id <run_id>
-```
-
-## Benchmarks (2+ models)
-Run a benchmark and auto-generate executive summary + procurement one-pager:
-```bash
-python scripts/benchmark_models.py \
-  --models moonshotai/Kimi-K2-Instruct meta-llama/Meta-Llama-3-8B-Instruct \
-  --profile quick_gates \
-  --out reports/benchmarks/benchmark.quick_gates.json
-```
-
-Outputs:
-- `reports/benchmarks/benchmark*.json`
-- `reports/benchmarks/executive_summary.<stem>.md`
-- `reports/benchmarks/one_pager.<stem>.md`
+To enable auto-deploy: add `RAILWAY_TOKEN` to GitHub → Settings → Secrets → Actions.
 
 ## Notes
 This project is for defensive testing in authorized lab environments only.
