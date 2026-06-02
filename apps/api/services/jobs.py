@@ -11,6 +11,10 @@ from apps.api.config import get_settings
 from apps.api.services.run_store import reports_dir, validate_run_id
 
 
+JOB_STORE_SCHEMA_VERSION = "1"
+JOB_STORE_SCHEMA_VERSION_KEY = "job_store_schema_version"
+
+
 def _utc_now_iso() -> str:
     return dt.datetime.now(tz=dt.timezone.utc).isoformat()
 
@@ -134,6 +138,22 @@ class SqlJobStore:
                         )
                         """
                     )
+                    conn.execute(
+                        """
+                        CREATE TABLE IF NOT EXISTS job_store_metadata (
+                          key TEXT PRIMARY KEY,
+                          value TEXT NOT NULL
+                        )
+                        """
+                    )
+                    conn.execute(
+                        """
+                        INSERT INTO job_store_metadata(key, value)
+                        VALUES (?, ?)
+                        ON CONFLICT(key) DO UPDATE SET value = excluded.value
+                        """,
+                        (JOB_STORE_SCHEMA_VERSION_KEY, JOB_STORE_SCHEMA_VERSION),
+                    )
                     conn.execute("CREATE INDEX IF NOT EXISTS idx_jobs_tenant ON jobs(tenant_id)")
                     conn.execute("CREATE INDEX IF NOT EXISTS idx_jobs_created ON jobs(created_at_utc)")
                     conn.commit()
@@ -157,6 +177,22 @@ class SqlJobStore:
                               updated_at_utc TEXT NOT NULL
                             )
                             """
+                        )
+                        cur.execute(
+                            """
+                            CREATE TABLE IF NOT EXISTS job_store_metadata (
+                              key TEXT PRIMARY KEY,
+                              value TEXT NOT NULL
+                            )
+                            """
+                        )
+                        cur.execute(
+                            """
+                            INSERT INTO job_store_metadata(key, value)
+                            VALUES (%s, %s)
+                            ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value
+                            """,
+                            (JOB_STORE_SCHEMA_VERSION_KEY, JOB_STORE_SCHEMA_VERSION),
                         )
                         cur.execute("CREATE INDEX IF NOT EXISTS idx_jobs_tenant ON jobs(tenant_id)")
                         cur.execute("CREATE INDEX IF NOT EXISTS idx_jobs_created ON jobs(created_at_utc)")
