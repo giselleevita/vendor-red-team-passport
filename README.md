@@ -13,6 +13,8 @@ Vendor Red-Team Passport automates structured adversarial testing of LLM APIs an
 
 Designed for security teams, procurement reviewers, and compliance auditors who need a reproducible, vendor-neutral evaluation of LLM API safety.
 
+For the hiring-focused project narrative, see [docs/CASE_STUDY.md](docs/CASE_STUDY.md).
+
 ---
 
 ## What It Does
