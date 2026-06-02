@@ -2,6 +2,7 @@
 
 [![CI](https://github.com/giselleevita/vendor-red-team-passport/actions/workflows/ci.yml/badge.svg)](https://github.com/giselleevita/vendor-red-team-passport/actions/workflows/ci.yml)
 [![Deploy](https://github.com/giselleevita/vendor-red-team-passport/actions/workflows/deploy.yml/badge.svg)](https://github.com/giselleevita/vendor-red-team-passport/actions/workflows/deploy.yml)
+![Coverage](https://img.shields.io/badge/attack%20classes-A1--A10%20✓-brightgreen)
 ![Version](https://img.shields.io/badge/version-1.0.0-green)
 ![Python](https://img.shields.io/badge/python-3.11%2B-blue)
 ![License](https://img.shields.io/badge/license-proprietary-lightgrey)
@@ -27,18 +28,20 @@ Designed for security teams, procurement reviewers, and compliance auditors who 
 
 ## Attack Classes
 
-| ID | Class | Description |
-|---|---|---|
-| A1 | Prompt Injection | Direct and indirect instruction override attempts |
-| A2 | Jailbreak | Persona switching, roleplay, hypothetical framing |
-| A3 | Data Exfiltration | System prompt leakage, context extraction |
-| A4 | Excessive Agency | Unauthorized tool calls, scope creep |
-| A5 | Insecure Output | Code execution, XSS, markdown injection in output |
-| A6 | Training Data Probing | Membership inference, verbatim reproduction |
-| A7 | Denial of Service | Resource exhaustion, repetition loops |
-| A8 | Model Inversion | Extracting parameters or fine-tuning signals |
-| A9 | Supply Chain | Third-party plugin and tool trust abuse |
-| A10 | Sensitive Data Handling | PII, credentials, regulated data in model output |
+| ID | Class | OWASP LLM | NIST | Description |
+|---|---|---|---|---|
+| A1 | Prompt Injection | LLM01 | SI-10 | Direct and indirect instruction override attempts |
+| A2 | Insecure Output Handling | LLM02 | SI-15 | Code execution, XSS, markdown injection in output |
+| A3 | Sensitive Information Disclosure | LLM06 | SC-28 | System prompt leakage, PII, credentials in output |
+| A4 | Model Denial of Service | LLM04 | SC-5 | Resource exhaustion, repetition loops |
+| A5 | Training Data Poisoning | LLM03 | SI-3 | Membership inference, verbatim reproduction |
+| A6 | Insecure Plugin Design | LLM07 | CM-7 | Third-party plugin and tool trust abuse |
+| A7 | Excessive Agency | LLM08 | AC-6 | Unauthorized tool calls, scope creep |
+| A8 | Overreliance | LLM09 | RA-3 | Model inversion, fine-tuning signal extraction |
+| A9 | Output Schema Compliance | LLM10 | SI-7 | Structured output contract enforcement |
+| A10 | Supply Chain Vulnerabilities | LLM05 | SA-12 | Third-party model and dependency risk |
+
+See `data/coverage.json` for the full OWASP × NIST × test crosswalk.
 
 ---
 
@@ -120,6 +123,21 @@ No code changes required to add a new vendor target — drop a YAML in `profiles
 
 ---
 
+## Running Tests
+
+```bash
+# All unit tests (no API key required — fully offline)
+pytest tests/ -v --tb=short --ignore=tests/e2e
+
+# Attack class coverage only
+pytest tests/api/test_attack_classes.py -v
+
+# Full suite with coverage report
+pytest tests/ --cov=apps --cov-report=term-missing
+```
+
+---
+
 ## Deployment
 
 See [`SECRETS_SETUP.md`](SECRETS_SETUP.md) for Railway/Render environment variables and [`ops/runbook.md`](ops/runbook.md) for production ops.
@@ -147,7 +165,7 @@ Render deployment config: `render.yaml`
 - [x] FastAPI backend + web dashboard
 - [x] Docker + Railway/Render deployment
 - [x] Sanitized evidence pack (no raw outputs)
-- [ ] Complete A1–A10 deterministic test cases (#2)
+- [x] Complete A1–A10 deterministic test cases — 30 tests + OWASP×NIST crosswalk (`data/coverage.json`)
 - [ ] Multi-model comparison UI on `/compare` (#3)
 - [ ] v0.1.0 release tag + sample passport in `docs/samples/` (#4)
 - [ ] SIEM/webhook export for passport results
