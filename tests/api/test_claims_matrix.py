@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import json
-
 from apps.api.services.claims import build_claim_matrix
 
 
@@ -61,4 +59,3 @@ def test_claim_matrix_not_evaluated_when_no_evidence() -> None:
     matrix = build_claim_matrix(run_id="r1", meta=meta, passport=passport, evidences=[])
     by_class = {c["attack_class"]: c for c in matrix["claims"]}
     assert by_class["A4"]["status"] == "NOT_EVALUATED"
-

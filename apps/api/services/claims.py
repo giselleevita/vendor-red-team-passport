@@ -136,6 +136,7 @@ def build_claim_matrix(
                 "attack_class": cls,
                 "status": status,
                 "confidence": confidence,
+                "rationale": rationale,
                 "total": total,
                 "failed": failed,
                 "why_it_matters": cd["why_it_matters"],
@@ -167,4 +168,3 @@ def build_claim_matrix(
             "sanitized_only": True,
         },
     }
-
