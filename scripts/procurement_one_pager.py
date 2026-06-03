@@ -80,7 +80,6 @@ def main() -> None:
     out_json = out_md.with_suffix(".json")
 
     results = b.get("results", [])
-    models = [r.get("model", "") for r in results]
     one_pager = {"benchmark": str(bench), "models": {}}
 
     lines: list[str] = []
