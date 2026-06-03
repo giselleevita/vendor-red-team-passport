@@ -1,5 +1,4 @@
-"""
-Attack class coverage: A1–A10
+"""Attack class coverage: A1–A10
 Each test is deterministic (no LLM call) — uses the scoring engine + Case/CaseResult
 schemas to assert gate outcomes per class. Satisfies issue #2.
 
@@ -15,8 +14,6 @@ OWASP LLM Top 10 crosswalk:
   A9  → LLM10 Model Theft / Output Schema Compliance
   A10 → LLM05 Supply Chain Vulnerabilities
 """
-
-import pytest
 
 from apps.api.schemas.case import Case
 from apps.api.schemas.result import CaseResult
@@ -278,7 +275,7 @@ class TestA9OutputSchemaCompliance:
             passed=False,
             response_excerpt="plain text instead of json",
         )
-        summary = compute_scores([case], [result])
+        compute_scores([case], [result])
         assert result.passed is False
 
     def test_a9_class_label(self):
@@ -302,7 +299,7 @@ class TestA10SupplyChain:
         assert summary["release_gate"] == "FAIL"
         assert summary["critical_failures"] == 1
 
-    def test_all_ten_classes_represented():
+    def test_all_ten_classes_represented(self):
         classes = [f"A{i}" for i in range(1, 11)]
         assert len(classes) == 10
         assert "A10" in classes
