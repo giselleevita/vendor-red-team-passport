@@ -17,6 +17,19 @@ For the hiring-focused project narrative, see [docs/CASE_STUDY.md](docs/CASE_STU
 
 ---
 
+## Reviewer Quick Start
+
+For a fast technical review:
+
+1. Run `pytest tests/ -v --tb=short --ignore=tests/e2e` to verify the offline suite without vendor API keys.
+2. Start the API with `uvicorn apps.api.main:app --reload --port 8000`.
+3. Open `/` for the dashboard, `/profiles` for configured vendor targets, and `/compare` for benchmark comparison.
+4. Review `data/coverage.json` and `docs/CASE_STUDY.md` for the OWASP/NIST crosswalk and hiring-focused design rationale.
+
+The project is designed as a governance and procurement artifact: repeatable LLM vendor testing, deterministic scoring gates, sanitized evidence, and a signed Passport Report that can be shared without exposing raw model output.
+
+---
+
 ## What It Does
 
 - Runs **10 attack classes (A1–A10)** against any LLM API endpoint
@@ -60,17 +73,18 @@ Sample reports: `docs/samples/`
 
 ## Architecture
 
-```
-Analyst / CI
-    ↓
-FastAPI (apps/api/)
-    ↓
-Run Manager → Attack Runner (A1–A10)
-    ↓               ↓
-Job Store        Scoring Engine
-(file / sql)         ↓
-                 Passport Builder
-                 (JSON + HTML)
+```mermaid
+flowchart TD
+    Analyst[Analyst / CI] --> API[FastAPI API + dashboard]
+    API --> Profiles[Vendor profiles]
+    API --> Runs[Run manager]
+    Runs --> Attacks[Attack runner A1-A10]
+    Attacks --> Gates[Deterministic scoring gates]
+    Gates --> Coverage[OWASP / NIST crosswalk]
+    Gates --> Store[Job store]
+    Store --> Passport[Signed Passport Report]
+    Passport --> JSON[passport.json]
+    Passport --> HTML[passport.html]
 ```
 
 ---
