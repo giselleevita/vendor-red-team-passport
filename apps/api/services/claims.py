@@ -51,7 +51,7 @@ def build_claim_matrix(
     evaluated_classes = set(total_by_class.keys())
 
     def evidence_url(case_id: str) -> str:
-        return f"/reports/runs/{run_id}/cases/{case_id}.json"
+        return f"/runs/{run_id}/cases/{case_id}.json"
 
     def top_evidence_for(cls: str, limit: int = 3) -> list[dict]:
         items = [f for f in failures if f.get("attack_class") == cls][:limit]

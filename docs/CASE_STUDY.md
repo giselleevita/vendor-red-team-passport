@@ -6,7 +6,7 @@ Organizations evaluating LLM vendors need more than a marketing claim that a mod
 
 ## Solution
 
-Vendor Red-Team Passport runs structured adversarial evaluations against LLM APIs and generates a signed JSON and HTML Passport Report. The report captures attack coverage, scoring outcomes, and framework mappings while avoiding raw model-output retention.
+Vendor Red-Team Passport runs structured adversarial evaluations against OpenAI-compatible LLM APIs and generates a JSON and HTML Passport Report. The report captures attack coverage, scoring outcomes, framework mappings, sanitized evidence, and a tamper-evident manifest with optional HMAC signing.
 
 ## Architecture
 
@@ -29,7 +29,7 @@ Vendor Red-Team Passport runs structured adversarial evaluations against LLM API
 
 - OWASP LLM Top 10 and NIST AI RMF crosswalk.
 - Deterministic gates for reproducible scoring.
-- Signed report artifacts.
+- Tamper-evident artifact manifest with optional HMAC signing.
 - Sanitized evidence handling.
 - CI tests for API behavior and profile validation.
 

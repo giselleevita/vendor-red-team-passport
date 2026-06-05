@@ -13,20 +13,42 @@ from apps.api.services.orchestrator import render_passport_html
 from apps.api.services.profiles import list_profiles
 from apps.api.services.run_store import (
     iter_case_evidence,
+    load_case_evidence,
+    load_json_artifact,
     list_run_ids_for_tenant,
     load_passport,
     load_run_meta,
     run_accessible_by_tenant,
     run_dir,
     save_passport_html,
+    validate_artifact_filename,
+    validate_case_id,
+    validate_run_id,
 )
 
 router = APIRouter()
 templates = Jinja2Templates(directory=str(Path(__file__).resolve().parents[1] / "templates"))
+_ALLOWED_RUN_ARTIFACTS = {
+    "run.json",
+    "passport.json",
+    "policy.json",
+    "coverage.json",
+    "compliance.json",
+    "manifest.json",
+}
 
 
 def _bad_run_id(e: ValueError) -> HTTPException:
     return HTTPException(status_code=400, detail=str(e))
+
+
+def _require_run_access(run_id: str, ctx: RequestContext) -> None:
+    try:
+        validate_run_id(run_id)
+    except ValueError as e:
+        raise _bad_run_id(e) from e
+    if not run_accessible_by_tenant(run_id, ctx.tenant_id):
+        raise HTTPException(status_code=404, detail="run_id not found")
 
 
 @router.get("/", response_class=HTMLResponse)
@@ -90,14 +112,18 @@ def run_detail(
     run_id: str,
     ctx: RequestContext = Depends(require_roles("viewer", "auditor", "operator", "admin")),
 ) -> FileResponse:
-    if not run_accessible_by_tenant(run_id, ctx.tenant_id):
-        raise HTTPException(status_code=404, detail="run_id not found")
+    _require_run_access(run_id, ctx)
     try:
         html_path = run_dir(run_id) / "passport.html"
     except ValueError as e:
         raise _bad_run_id(e) from e
     if html_path.exists():
-        return FileResponse(html_path, media_type="text/html")
+        try:
+            cached = html_path.read_text(encoding="utf-8")
+        except OSError:
+            cached = ""
+        if "/reports/" not in cached:
+            return FileResponse(html_path, media_type="text/html")
 
     try:
         passport = load_passport(run_id)
@@ -111,14 +137,52 @@ def run_detail(
     return FileResponse(html_path, media_type="text/html")
 
 
+@router.get("/runs/{run_id}/artifacts/{artifact_name}")
+def run_artifact(
+    run_id: str,
+    artifact_name: str,
+    ctx: RequestContext = Depends(require_roles("viewer", "auditor", "operator", "admin")),
+) -> dict:
+    _require_run_access(run_id, ctx)
+    try:
+        name = validate_artifact_filename(artifact_name)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e
+    if name not in _ALLOWED_RUN_ARTIFACTS:
+        raise HTTPException(status_code=404, detail="artifact not found")
+    try:
+        payload = load_json_artifact(run_id, name)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e
+    if payload is None:
+        raise HTTPException(status_code=404, detail="artifact not found")
+    return payload
+
+
+@router.get("/runs/{run_id}/cases/{case_id}.json")
+def run_case_evidence(
+    run_id: str,
+    case_id: str,
+    ctx: RequestContext = Depends(require_roles("viewer", "auditor", "operator", "admin")),
+) -> dict:
+    _require_run_access(run_id, ctx)
+    try:
+        cid = validate_case_id(case_id)
+        evidence = load_case_evidence(run_id, cid)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e
+    if evidence is None:
+        raise HTTPException(status_code=404, detail="case evidence not found")
+    return evidence
+
+
 @router.get("/runs/{run_id}/claims", response_class=HTMLResponse)
 def run_claims(
     request: Request,
     run_id: str,
     ctx: RequestContext = Depends(require_roles("viewer", "auditor", "operator", "admin")),
 ) -> HTMLResponse:
-    if not run_accessible_by_tenant(run_id, ctx.tenant_id):
-        raise HTTPException(status_code=404, detail="run_id not found")
+    _require_run_access(run_id, ctx)
     try:
         meta = load_run_meta(run_id) or {}
         passport = load_passport(run_id)
