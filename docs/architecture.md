@@ -3,7 +3,7 @@
 ## High-Level
 - FastAPI service orchestrates runs and serves a small HTML UI.
 - Evaluations call the Featherless OpenAI-compatible chat API.
-- Artifacts are written to disk under `reports/` and served locally via `GET /reports/...`.
+- Artifacts are written to disk under `reports/` and served through authenticated, tenant-scoped run routes.
 - Scoring is deterministic given a suite version and recorded parameters.
 
 ## Components
@@ -25,7 +25,9 @@ flowchart LR
   API -->|"sanitize + score"| SCORE["Scoring + Compliance Mapping"]
   SCORE -->|"write artifacts"| DISK["reports/runs/<run_id>/ (run.json, passport.json, passport.html, cases/*.json)"]
   U -->|"GET /runs/<id>"| API
-  U -->|"GET /reports/..."| DISK
+  U -->|"GET /runs/<id>/artifacts/<name>"| API
+  U -->|"GET /runs/<id>/cases/<case_id>.json"| API
+  API -->|"tenant check + read artifact"| DISK
 ```
 
 ## Artifact Contract (Per Run)

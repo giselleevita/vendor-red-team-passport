@@ -195,15 +195,14 @@ def render_passport_html(run_id: str, passport: Passport) -> str:
     compliance = _load_json("compliance.json") or (passport.model_dump().get("executive_verdict", {}) or {}).get("compliance_mapping", {})
 
     artifacts = {
-        "manifest": f"/reports/runs/{run_id}/manifest.json",
-        "policy": f"/reports/runs/{run_id}/policy.json",
-        "coverage": f"/reports/runs/{run_id}/coverage.json",
-        "compliance": f"/reports/runs/{run_id}/compliance.json",
+        "manifest": f"/runs/{run_id}/artifacts/manifest.json",
+        "policy": f"/runs/{run_id}/artifacts/policy.json",
+        "coverage": f"/runs/{run_id}/artifacts/coverage.json",
+        "compliance": f"/runs/{run_id}/artifacts/compliance.json",
     }
 
-    # Evidence links are served from disk via FastAPI StaticFiles at /reports.
     def evidence_link(case_id: str) -> str:
-        return f"/reports/runs/{run_id}/cases/{case_id}.json"
+        return f"/runs/{run_id}/cases/{case_id}.json"
 
     return tmpl.render(
         run_id=run_id,

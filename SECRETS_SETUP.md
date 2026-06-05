@@ -16,18 +16,18 @@ Railway → Project → vrtp-api → Variables → Raw Editor
 
 ```env
 FEATHERLESS_API_KEY=<your-key-from-featherless.ai>
-VRTP_API_KEY=<openssl rand -hex 32>
-SECRET_KEY=<openssl rand -hex 32>
-DATABASE_URL=${{Postgres.DATABASE_URL}}
+AUTH_JWT_HS256_SECRET=<openssl rand -hex 32>
 ```
 
 ### Optional
 
 ```env
 DEFAULT_MODEL=meta-llama/Llama-3.1-8B-Instruct
-VRTP_MAX_CONCURRENT=4
-VRTP_TIMEOUT=60
-LOG_LEVEL=INFO
+AUTH_ENABLED=true
+RBAC_ENABLED=true
+VENDOR_RTP_REPORTS_DIR=/app/reports
+VENDOR_RTP_MANIFEST_HMAC_KEY=<openssl rand -hex 32>
+RUN_EXECUTOR_MODE=external
 ```
 
 > ⚠️ `PORT` wird von Railway automatisch gesetzt — nicht manuell eintragen.
@@ -35,8 +35,8 @@ LOG_LEVEL=INFO
 ## 3. Secrets generieren (lokal)
 
 ```bash
-openssl rand -hex 32   # für VRTP_API_KEY
-openssl rand -hex 32   # für SECRET_KEY
+openssl rand -hex 32   # für AUTH_JWT_HS256_SECRET
+openssl rand -hex 32   # optional für VENDOR_RTP_MANIFEST_HMAC_KEY
 ```
 
 ## 4. Featherless API Key

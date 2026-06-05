@@ -3,9 +3,12 @@ from __future__ import annotations
 import json
 import os
 from pathlib import Path
+import re
 
 from apps.api.config import get_settings
 from apps.api.schemas.passport import Passport
+
+_CASE_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]{0,119}$")
 
 
 def _repo_root() -> Path:
@@ -50,6 +53,28 @@ def validate_run_id(run_id: str) -> str:
     return rid
 
 
+def validate_artifact_filename(filename: str) -> str:
+    name = (filename or "").strip()
+    if not name:
+        raise ValueError("invalid artifact filename: empty")
+    if len(name) > 120:
+        raise ValueError("invalid artifact filename: too long")
+    if any(ch in name for ch in ("/", "\\", "\x00")):
+        raise ValueError("invalid artifact filename: contains forbidden path characters")
+    if any(ord(ch) < 32 for ch in name):
+        raise ValueError("invalid artifact filename: contains control characters")
+    if name in {".", ".."} or not name.endswith(".json"):
+        raise ValueError("invalid artifact filename")
+    return name
+
+
+def validate_case_id(case_id: str) -> str:
+    cid = (case_id or "").strip()
+    if not _CASE_ID_RE.fullmatch(cid):
+        raise ValueError("invalid case_id")
+    return cid
+
+
 def run_dir(run_id: str) -> Path:
     return runs_dir() / validate_run_id(run_id)
 
@@ -69,7 +94,8 @@ def save_run_meta(run_id: str, meta: dict) -> Path:
 def save_case_evidence(run_id: str, case_id: str, evidence: dict) -> Path:
     d = cases_dir(run_id)
     d.mkdir(parents=True, exist_ok=True)
-    path = d / f"{case_id}.json"
+    case_name = validate_case_id(case_id)
+    path = d / f"{case_name}.json"
     path.write_text(json.dumps(evidence, indent=2), encoding="utf-8")
     return path
 
@@ -83,7 +109,8 @@ def list_case_ids(run_id: str) -> list[str]:
 
 
 def load_case_evidence(run_id: str, case_id: str) -> dict | None:
-    path = cases_dir(run_id) / f"{case_id}.json"
+    case_name = validate_case_id(case_id)
+    path = cases_dir(run_id) / f"{case_name}.json"
     if not path.exists():
         return None
     return json.loads(path.read_text(encoding="utf-8"))
@@ -117,9 +144,16 @@ def save_passport(run_id: str, passport: Passport) -> Path:
 def save_json_artifact(run_id: str, filename: str, payload: dict) -> Path:
     d = run_dir(run_id)
     d.mkdir(parents=True, exist_ok=True)
-    path = d / filename
+    path = d / validate_artifact_filename(filename)
     path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
     return path
+
+
+def load_json_artifact(run_id: str, filename: str) -> dict | None:
+    path = run_dir(run_id) / validate_artifact_filename(filename)
+    if not path.exists():
+        return None
+    return json.loads(path.read_text(encoding="utf-8"))
 
 
 def load_passport(run_id: str) -> Passport | None:

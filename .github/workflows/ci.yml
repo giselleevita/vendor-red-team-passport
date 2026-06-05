@@ -29,11 +29,9 @@ jobs:
 
       - name: Run unit tests
         env:
-          VRTP_API_KEY: ci-test-key
-          SECRET_KEY: ci-secret-key-32chars-padded-here
+          AUTH_JWT_HS256_SECRET: ci-secret-key-32chars-padded-here
           FEATHERLESS_API_KEY: skip
-          VRTP_REPORTS_DIR: /tmp/vrtp_reports_ci
-          VRTP_DATA_DIR: /tmp/vrtp_data_ci
+          VENDOR_RTP_REPORTS_DIR: /tmp/vrtp_reports_ci
         run: pytest tests/ -v --tb=short --ignore=tests/e2e
 
   docker:
