@@ -4,33 +4,21 @@ services:
     runtime: docker
     dockerfilePath: ./Dockerfile
     plan: free
-    healthCheckPath: /api/v1/health
+    healthCheckPath: /health
     envVars:
       - key: FEATHERLESS_API_KEY
         sync: false
-      - key: VRTP_API_KEY
+      - key: AUTH_JWT_HS256_SECRET
         sync: false
-      - key: SECRET_KEY
+      - key: VENDOR_RTP_MANIFEST_HMAC_KEY
         sync: false
-      - key: DATABASE_URL
-        fromDatabase:
-          name: vrtp-db
-          property: connectionString
+      - key: AUTH_ENABLED
+        value: "true"
+      - key: RBAC_ENABLED
+        value: "true"
       - key: DEFAULT_MODEL
         value: meta-llama/Llama-3.1-8B-Instruct
-      - key: VRTP_MAX_CONCURRENT
-        value: "2"
-      - key: VRTP_TIMEOUT
-        value: "60"
-      - key: LOG_LEVEL
-        value: INFO
-      - key: VRTP_REPORTS_DIR
+      - key: VENDOR_RTP_REPORTS_DIR
         value: /app/reports
-      - key: VRTP_DATA_DIR
-        value: /app/data
-
-databases:
-  - name: vrtp-db
-    plan: free
-    databaseName: vrtp
-    user: vrtp
+      - key: RUN_EXECUTOR_MODE
+        value: external

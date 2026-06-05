@@ -3,13 +3,13 @@
 [![CI](https://github.com/giselleevita/vendor-red-team-passport/actions/workflows/ci.yml/badge.svg)](https://github.com/giselleevita/vendor-red-team-passport/actions/workflows/ci.yml)
 [![Deploy](https://github.com/giselleevita/vendor-red-team-passport/actions/workflows/deploy.yml/badge.svg)](https://github.com/giselleevita/vendor-red-team-passport/actions/workflows/deploy.yml)
 ![Coverage](https://img.shields.io/badge/attack%20classes-A1--A10%20✓-brightgreen)
-![Version](https://img.shields.io/badge/version-1.0.0-green)
+![Version](https://img.shields.io/badge/version-0.1.0-green)
 ![Python](https://img.shields.io/badge/python-3.11%2B-blue)
 ![License](https://img.shields.io/badge/license-proprietary-lightgrey)
 
 > Defense-oriented, analyst-first security evaluation tool for LLM APIs.
 
-Vendor Red-Team Passport automates structured adversarial testing of LLM APIs and generates a portable **Passport Report** — a signed, shareable JSON + HTML document capturing attack coverage, scoring gates, and sanitized evidence.
+Vendor Red-Team Passport automates structured adversarial testing of OpenAI-compatible LLM APIs and generates a portable **Passport Report**: JSON + HTML output with attack coverage, scoring gates, sanitized evidence, and a tamper-evident manifest with optional HMAC signing.
 
 Designed for security teams, procurement reviewers, and compliance auditors who need a reproducible, vendor-neutral evaluation of LLM API safety.
 
@@ -22,20 +22,21 @@ For the hiring-focused project narrative, see [docs/CASE_STUDY.md](docs/CASE_STU
 For a fast technical review:
 
 1. Run `pytest tests/ -v --tb=short --ignore=tests/e2e` to verify the offline suite without vendor API keys.
-2. Start the API with `uvicorn apps.api.main:app --reload --port 8000`.
-3. Open `/` for the dashboard, `/profiles` for configured vendor targets, and `/compare` for benchmark comparison.
-4. Review `data/coverage.json` and `docs/CASE_STUDY.md` for the OWASP/NIST crosswalk and hiring-focused design rationale.
+2. Set `AUTH_JWT_HS256_SECRET=local-demo-secret` and generate a local bearer token with `python scripts/make_demo_jwt.py`.
+3. Start the API with `uvicorn apps.api.main:app --reload --port 8000`.
+4. Call protected routes with `Authorization: Bearer <token>`; see `docs/demo-authz.md` for curl examples.
+5. Review `data/coverage.json` and `docs/CASE_STUDY.md` for the OWASP/NIST crosswalk and hiring-focused design rationale.
 
-The project is designed as a governance and procurement artifact: repeatable LLM vendor testing, deterministic scoring gates, sanitized evidence, and a signed Passport Report that can be shared without exposing raw model output.
+The project is designed as a governance and procurement artifact: repeatable LLM vendor testing, deterministic scoring gates, sanitized evidence, and a Passport Report that can be shared without exposing raw model output.
 
 ---
 
 ## What It Does
 
-- Runs **10 attack classes (A1–A10)** against any LLM API endpoint
+- Runs **10 attack classes (A1–A10)** against configured OpenAI-compatible LLM APIs
 - Scores each class against deterministic gates (pass / fail / partial)
 - Generates a **Passport Report** in JSON + HTML, shareable without raw model output
-- Provides a web dashboard (`/ui`) for run management and comparison
+- Provides server-rendered dashboard pages (`/`, `/runs`, `/compare`) for run management and comparison
 - Supports multi-model benchmark comparison (`/compare`)
 - Maps results to OWASP Top 10 for LLMs and NIST AI RMF
 
@@ -65,9 +66,10 @@ See `data/coverage.json` for the full OWASP × NIST × test crosswalk.
 Each run produces:
 - `passport.json` — machine-readable results with scores, gate outcomes, OWASP crosswalk
 - `passport.html` — human-readable report for stakeholder sharing
+- `manifest.json` — artifact hashes with optional HMAC signature when configured
 - Sanitized evidence only — no raw model outputs are persisted
 
-Sample reports: `docs/samples/`
+Generated reports are stored under `reports/runs/<run_id>/` and served through authenticated run-scoped routes.
 
 ---
 
@@ -82,7 +84,7 @@ flowchart TD
     Attacks --> Gates[Deterministic scoring gates]
     Gates --> Coverage[OWASP / NIST crosswalk]
     Gates --> Store[Job store]
-    Store --> Passport[Signed Passport Report]
+    Store --> Passport[Tamper-evident Passport Report]
     Passport --> JSON[passport.json]
     Passport --> HTML[passport.html]
 ```
@@ -98,12 +100,15 @@ python -m venv .venv
 source .venv/bin/activate
 pip install -e .[dev]
 cp .env.example .env
+export AUTH_JWT_HS256_SECRET=local-demo-secret
+export TOKEN=$(python scripts/make_demo_jwt.py)
 uvicorn apps.api.main:app --reload --port 8000
 ```
 
-Open:
-- `http://127.0.0.1:8000/` — Web dashboard
-- `http://127.0.0.1:8000/api/v1/health` — Health check
+Check:
+- `curl http://127.0.0.1:8000/health` — health check
+- `curl -H "Authorization: Bearer $TOKEN" http://127.0.0.1:8000/profiles` — authenticated profiles list
+- `curl -H "Authorization: Bearer $TOKEN" http://127.0.0.1:8000/runs` — authenticated runs view
 
 ### Docker
 
@@ -117,7 +122,7 @@ docker compose up -d --build
 
 | Method | Endpoint | Description |
 |---|---|---|
-| `GET` | `/api/v1/health` | Health check |
+| `GET` | `/health` | Health check |
 | `POST` | `/runs` | Start a new evaluation run |
 | `GET` | `/runs/jobs/{job_id}` | Poll run status |
 | `GET` | `/passports/{run_id}` | Retrieve passport report |
@@ -178,12 +183,12 @@ Render deployment config: `render.yaml`
 
 - [x] 10 attack class framework (A1–A10)
 - [x] Passport report (JSON + HTML)
-- [x] FastAPI backend + web dashboard
+- [x] FastAPI backend + server-rendered dashboard
 - [x] Docker + Railway/Render deployment
 - [x] Sanitized evidence pack (no raw outputs)
 - [x] Complete A1–A10 deterministic test cases — 30 tests + OWASP×NIST crosswalk (`data/coverage.json`)
 - [ ] Multi-model comparison UI on `/compare` (#3)
-- [ ] v0.1.0 release tag + sample passport in `docs/samples/` (#4)
+- [ ] v0.1.0 release tag + synthetic sample passport
 - [ ] SIEM/webhook export for passport results
 - [ ] CLI runner (`passport run --profile vendor.yaml`)
 

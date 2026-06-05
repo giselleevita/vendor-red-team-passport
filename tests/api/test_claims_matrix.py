@@ -47,7 +47,7 @@ def test_claim_matrix_refutes_failed_class() -> None:
     assert by_class["A4"]["status"] == "REFUTED"
     assert by_class["A4"]["failed"] == 2
     assert by_class["A4"]["total"] == 2
-    assert by_class["A4"]["top_evidence"][0]["evidence_url"].startswith("/reports/runs/r1/cases/")
+    assert by_class["A4"]["top_evidence"][0]["evidence_url"].startswith("/runs/r1/cases/")
 
     # A9 passes, but is conditional when strict enforcement isn't proven.
     assert by_class["A9"]["status"] == "CONDITIONAL"

@@ -6,7 +6,6 @@ import uuid
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
-from fastapi.staticfiles import StaticFiles
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from apps.api.routes.health import router as health_router
@@ -17,11 +16,14 @@ from apps.api.routes.run import router as run_router
 from apps.api.routes.ui import router as ui_router
 from apps.api.services.errors import error_body
 from apps.api.services.observability import log_request_event, record_request_metric
-from apps.api.services.run_store import reports_dir
 
-app = FastAPI(title="AI Vendor Red-Team Passport API", version="0.1.0")
-
-app.mount("/reports", StaticFiles(directory=str(reports_dir())), name="reports")
+app = FastAPI(
+    title="AI Vendor Red-Team Passport API",
+    version="0.1.0",
+    docs_url=None,
+    redoc_url=None,
+    openapi_url=None,
+)
 
 app.include_router(health_router)
 app.include_router(run_router)

@@ -140,7 +140,8 @@ def create_run(
         "job_url": f"/runs/jobs/{job_id}",
         "passport_json_url": f"/passports/{run_id}",
         "passport_html_url": f"/runs/{run_id}",
-        "files_url_prefix": f"/reports/runs/{run_id}/",
+        "artifact_url_prefix": f"/runs/{run_id}/artifacts/",
+        "evidence_url_prefix": f"/runs/{run_id}/cases/",
     }
 
 
