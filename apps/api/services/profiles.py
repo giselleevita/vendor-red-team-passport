@@ -57,6 +57,9 @@ def load_profile(name_or_path: str, *, allow_external_paths: bool = True) -> dic
         if path is None:
             raise FileNotFoundError(f"profile not found: {raw} (looked in {base})")
 
+    if not allow_external_paths and not _is_within(base, path):
+        raise PermissionError(f"profile path outside allowed profiles directory: {path.resolve()}")
+
     if path.suffix.lower() in (".yaml", ".yml"):
         data = _load_yaml(path)
     elif path.suffix.lower() == ".json":
