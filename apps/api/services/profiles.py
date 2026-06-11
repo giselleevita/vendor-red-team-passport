@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 from functools import lru_cache
 from pathlib import Path
 
@@ -46,16 +47,22 @@ def load_profile(name_or_path: str, *, allow_external_paths: bool = True) -> dic
         raise ValueError("profile name/path is empty")
 
     base = profiles_dir().resolve()
-    p = Path(raw).expanduser()
-    if p.exists():
-        path = p.resolve()
-        if not allow_external_paths and not _is_within(base, path):
-            raise PermissionError(f"profile path outside allowed profiles directory: {path}")
-    else:
+    if not allow_external_paths:
+        if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]*", raw) or raw in {".", ".."}:
+            raise ValueError("invalid profile name")
         candidates = [base / f"{raw}.yaml", base / f"{raw}.yml", base / f"{raw}.json"]
         path = next((c for c in candidates if c.exists()), None)
         if path is None:
             raise FileNotFoundError(f"profile not found: {raw} (looked in {base})")
+    else:
+        p = Path(raw).expanduser()
+        if p.exists():
+            path = p.resolve()
+        else:
+            candidates = [base / f"{raw}.yaml", base / f"{raw}.yml", base / f"{raw}.json"]
+            path = next((c for c in candidates if c.exists()), None)
+            if path is None:
+                raise FileNotFoundError(f"profile not found: {raw} (looked in {base})")
 
     if not allow_external_paths and not _is_within(base, path):
         raise PermissionError(f"profile path outside allowed profiles directory: {path.resolve()}")

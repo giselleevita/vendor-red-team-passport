@@ -27,4 +27,4 @@ def test_create_run_rejects_external_profile_path(tmp_path: Path, auth_header) -
     client = TestClient(app)
     response = client.post("/runs", json={"profile": str(ext_profile)}, headers=auth_header(roles=["operator"]))
     assert response.status_code == 400
-    assert "outside allowed profiles directory" in response.json()["detail"]
+    assert response.json()["detail"] == "invalid profile name"
