@@ -9,7 +9,7 @@ def test_profile_name_cannot_traverse_outside_profiles_directory(tmp_path: Path)
     outside = profiles_dir().parent / "outside-profile.yaml"
     outside.write_text("name: outside\n", encoding="utf-8")
     try:
-        with pytest.raises(PermissionError):
+        with pytest.raises(ValueError, match="invalid profile name"):
             load_profile("../outside-profile", allow_external_paths=False)
     finally:
         outside.unlink(missing_ok=True)
@@ -19,5 +19,5 @@ def test_explicit_external_profile_is_rejected_when_disabled(tmp_path: Path) -> 
     outside = tmp_path / "external.yaml"
     outside.write_text("name: outside\n", encoding="utf-8")
 
-    with pytest.raises(PermissionError):
+    with pytest.raises(ValueError, match="invalid profile name"):
         load_profile(str(outside), allow_external_paths=False)
