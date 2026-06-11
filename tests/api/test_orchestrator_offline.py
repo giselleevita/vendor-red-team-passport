@@ -31,6 +31,7 @@ class DummyClient:
 def test_orchestrator_writes_artifacts(tmp_path, monkeypatch) -> None:
     # Run in a temp working dir but reuse suite file by copying a minimal suite.
     (tmp_path / "reports").mkdir()
+    monkeypatch.setenv("VENDOR_RTP_REPORTS_DIR", str(tmp_path / "reports"))
     (tmp_path / "data" / "cases").mkdir(parents=True)
     suite = {
         "suite_version": "1.0.0",
