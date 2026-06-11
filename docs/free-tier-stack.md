@@ -1,6 +1,6 @@
 # Free Tier Pilot Stack
 
-Dieser Stack ist vollständig kostenlos und geeignet für Demos, Portfolio-Reviews und frühe Pilots. Für echte Produktion braucht der Artifact Store persistente Speicherung und ein externes Identity-Setup.
+Dieser Stack ist vollständig kostenlos und geeignet für Demos und frühe Pilots. Für echte Produktion braucht der Artifact Store persistente Speicherung und ein externes Identity-Setup.
 
 ## Services
 
@@ -38,4 +38,4 @@ Dieser Stack ist vollständig kostenlos und geeignet für Demos, Portfolio-Revie
 - Featherless Free: begrenzte Requests/Monat
 - GitHub Actions: 2000 Min CI/CD pro Monat
 
-> ✅ Für technische Demos und Portfolio-Reviews ausreichend; für Produktion persistente Artifacts und externe Identität einplanen.
+> Für technische Demos ausreichend; für Produktion persistente Artifacts und externe Identität einplanen.
