@@ -1,4 +1,4 @@
-# 5-Min Demo Script (Recruiter-Ready)
+# 5-Minute Reviewer Demo
 
 ## Goal
 Show procurement-grade evidence artifacts (sanitized), a decision-ready HTML report, and model-to-model comparison in one flow.
