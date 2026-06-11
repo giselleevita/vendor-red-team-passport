@@ -13,7 +13,7 @@ Vendor Red-Team Passport automates structured adversarial testing of OpenAI-comp
 
 Designed for security teams, procurement reviewers, and compliance auditors who need a reproducible, vendor-neutral evaluation of LLM API safety.
 
-For the hiring-focused project narrative, see [docs/CASE_STUDY.md](docs/CASE_STUDY.md).
+For design rationale and evaluation tradeoffs, see [docs/CASE_STUDY.md](docs/CASE_STUDY.md).
 
 ---
 
@@ -25,7 +25,7 @@ For a fast technical review:
 2. Set `AUTH_JWT_HS256_SECRET=local-demo-secret` and generate a local bearer token with `python scripts/make_demo_jwt.py`.
 3. Start the API with `uvicorn apps.api.main:app --reload --port 8000`.
 4. Call protected routes with `Authorization: Bearer <token>`; see `docs/demo-authz.md` for curl examples.
-5. Review `data/coverage.json` and `docs/CASE_STUDY.md` for the OWASP/NIST crosswalk and hiring-focused design rationale.
+5. Review `data/coverage.json` and `docs/CASE_STUDY.md` for the OWASP/NIST crosswalk and design rationale.
 
 The project is designed as a governance and procurement artifact: repeatable LLM vendor testing, deterministic scoring gates, sanitized evidence, and a Passport Report that can be shared without exposing raw model output.
 

@@ -37,7 +37,7 @@ Vendor Red-Team Passport runs structured adversarial evaluations against OpenAI-
 
 This repo is a strong bridge between security engineering and client-facing delivery. It shows API design, testability, reporting, documentation, and stakeholder-aware output.
 
-For Netcompany-style interviews, the strongest framing is procurement/security evaluation tooling for organizations adopting AI systems.
+The strongest product framing is procurement and security-evaluation tooling for organizations adopting AI systems.
 
 ## Next Improvements
 
