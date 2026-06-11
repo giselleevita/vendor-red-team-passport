@@ -3,7 +3,7 @@
 [![CI](https://github.com/giselleevita/vendor-red-team-passport/actions/workflows/ci.yml/badge.svg)](https://github.com/giselleevita/vendor-red-team-passport/actions/workflows/ci.yml)
 [![Deploy](https://github.com/giselleevita/vendor-red-team-passport/actions/workflows/deploy.yml/badge.svg)](https://github.com/giselleevita/vendor-red-team-passport/actions/workflows/deploy.yml)
 ![Coverage](https://img.shields.io/badge/attack%20classes-A1--A10%20✓-brightgreen)
-![Version](https://img.shields.io/badge/version-0.1.0-green)
+![Version](https://img.shields.io/badge/version-0.1.1-green)
 ![Python](https://img.shields.io/badge/python-3.11%2B-blue)
 ![License](https://img.shields.io/badge/license-proprietary-lightgrey)
 
@@ -188,7 +188,7 @@ Render deployment config: `render.yaml`
 - [x] Sanitized evidence pack (no raw outputs)
 - [x] Complete A1–A10 deterministic test cases — 30 tests + OWASP×NIST crosswalk (`data/coverage.json`)
 - [ ] Multi-model comparison UI on `/compare` (#3)
-- [ ] v0.1.0 release tag + synthetic sample passport
+- [x] v0.1.0 release tag + sanitized sample passport
 - [ ] SIEM/webhook export for passport results
 - [ ] CLI runner (`passport run --profile vendor.yaml`)
 
