@@ -210,4 +210,5 @@ All evidence is sanitized — raw model outputs are never persisted.
 
 ## License
 
-Proprietary. Contact for licensing terms.
+Copyright (c) 2026 Giselle Evita Koch. See [LICENSE](LICENSE) for the
+proprietary source-available terms.
