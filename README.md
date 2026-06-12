@@ -13,6 +13,8 @@ Vendor Red-Team Passport automates structured adversarial testing of OpenAI-comp
 
 Designed for security teams, procurement reviewers, and compliance auditors who need a reproducible, vendor-neutral evaluation of LLM API safety.
 
+![AI Vendor Red-Team Passport dashboard](docs/screenshots/dashboard.png)
+
 For design rationale and evaluation tradeoffs, see [docs/CASE_STUDY.md](docs/CASE_STUDY.md).
 
 ---
