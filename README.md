@@ -13,6 +13,8 @@ Vendor Red-Team Passport automates structured adversarial testing of OpenAI-comp
 
 Designed for security teams, procurement reviewers, and compliance auditors who need a reproducible, vendor-neutral evaluation of LLM API safety.
 
+**Runtime enforcement:** For blocking unsafe tool calls in deployed agents, see [agent-security-gate](https://github.com/giselleevita/agent-security-gate) — the defensive complement to this offensive evaluation tool.
+
 ![AI Vendor Red-Team Passport dashboard](docs/screenshots/dashboard.png)
 
 For design rationale and evaluation tradeoffs, see [docs/CASE_STUDY.md](docs/CASE_STUDY.md).
@@ -207,6 +209,16 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md).
 This tool is for **defensive testing in authorized lab environments only**.
 Do not run against APIs without explicit written authorization.
 All evidence is sanitized — raw model outputs are never persisted.
+
+---
+
+## Related projects
+
+| Layer | Project |
+|---|---|
+| **Enforce** (runtime) | [agent-security-gate](https://github.com/giselleevita/agent-security-gate) — OPA policy gateway for tool-call decisions |
+| **Govern** (guidance) | [security-compliance-copilot](https://github.com/giselleevita/security-compliance-copilot) — cited NIST/CISA RAG assistant |
+| **Evidence** | [proofrail-evidence-api](https://github.com/giselleevita/proofrail-evidence-api) — signed compliance evidence bundles |
 
 ---
 
