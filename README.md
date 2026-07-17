@@ -5,7 +5,7 @@
 ![Coverage](https://img.shields.io/badge/attack%20classes-A1--A10%20✓-brightgreen)
 ![Version](https://img.shields.io/badge/version-0.1.1-green)
 ![Python](https://img.shields.io/badge/python-3.11%2B-blue)
-![License](https://img.shields.io/badge/license-proprietary-lightgrey)
+![License](https://img.shields.io/badge/license-Apache--2.0-green)
 
 > Defense-oriented, analyst-first security evaluation tool for LLM APIs.
 
@@ -224,5 +224,5 @@ All evidence is sanitized — raw model outputs are never persisted.
 
 ## License
 
-Copyright (c) 2026 Giselle Evita Koch. See [LICENSE](LICENSE) for the
-proprietary source-available terms.
+Copyright (c) 2026 Giselle Evita Koch. Licensed under the
+[Apache License 2.0](LICENSE).
