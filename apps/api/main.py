@@ -6,13 +6,15 @@ import uuid
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from slowapi.errors import RateLimitExceeded
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
+from apps.api.config_validation import validate_all
 from apps.api.routes.health import router as health_router
 from apps.api.routes.metrics import router as metrics_router
 from apps.api.routes.passport import router as passport_router
 from apps.api.routes.profiles import router as profiles_router
-from apps.api.routes.run import router as run_router
+from apps.api.routes.run import limiter, router as run_router
 from apps.api.routes.ui import router as ui_router
 from apps.api.services.errors import error_body
 from apps.api.services.observability import log_request_event, record_request_metric
@@ -24,6 +26,7 @@ app = FastAPI(
     redoc_url=None,
     openapi_url=None,
 )
+app.state.limiter = limiter
 
 app.include_router(health_router)
 app.include_router(run_router)
@@ -49,6 +52,33 @@ def _tenant_actor(request: Request) -> tuple[str, str]:
     tenant_id = str(getattr(ctx, "tenant_id", "") or "")
     actor = str(getattr(ctx, "subject", "") or "")
     return tenant_id, actor
+
+
+@app.middleware("http")
+async def request_size_limit_middleware(request: Request, call_next):
+    """Reject oversized request bodies before application processing."""
+    if request.method not in {"GET", "HEAD", "OPTIONS"}:
+        content_length = request.headers.get("content-length")
+        if content_length:
+            try:
+                size_bytes = int(content_length)
+            except ValueError:
+                size_bytes = 0
+            max_size_bytes = 10 * 1024 * 1024
+            if size_bytes > max_size_bytes:
+                cid = (request.headers.get("x-correlation-id") or "").strip() or str(uuid.uuid4())
+                response = JSONResponse(
+                    status_code=413,
+                    content=error_body(
+                        status_code=413,
+                        message="request payload too large",
+                        correlation_id=cid,
+                        detail=f"maximum request size is {max_size_bytes} bytes",
+                    ),
+                )
+                response.headers["X-Correlation-ID"] = cid
+                return response
+    return await call_next(request)
 
 
 @app.middleware("http")
@@ -107,6 +137,23 @@ async def handle_validation_error(request: Request, exc: RequestValidationError)
     return response
 
 
+@app.exception_handler(RateLimitExceeded)
+async def handle_rate_limit_error(request: Request, exc: RateLimitExceeded):  # noqa: ARG001
+    cid = _correlation_id(request)
+    response = JSONResponse(
+        status_code=429,
+        content=error_body(
+            status_code=429,
+            message="rate limit exceeded",
+            correlation_id=cid,
+            detail="too many requests",
+        ),
+    )
+    response.headers["X-Correlation-ID"] = cid
+    response.headers["Retry-After"] = "60"
+    return response
+
+
 @app.exception_handler(HTTPException)
 @app.exception_handler(StarletteHTTPException)
 async def handle_http_error(request: Request, exc: HTTPException):
@@ -138,3 +185,8 @@ async def handle_unexpected_error(request: Request, exc: Exception):  # noqa: AR
     response = JSONResponse(status_code=500, content=body)
     response.headers["X-Correlation-ID"] = cid
     return response
+
+
+@app.on_event("startup")
+async def validate_startup_configuration() -> None:
+    validate_all()

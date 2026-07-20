@@ -8,6 +8,36 @@ from threading import Lock
 _log = logging.getLogger("vendor_rtp.http")
 
 
+def mask_secret(secret: str, visible_chars: int = 4) -> str:
+    """
+    Mask a secret value for safe logging/display.
+
+    Shows only the first N characters, rest are replaced with '*'.
+    Useful for API keys, tokens, etc.
+
+    Args:
+        secret: The secret value to mask
+        visible_chars: Number of characters to show (default: 4)
+
+    Returns:
+        Masked secret (e.g., "sk-1a2b*******************")
+
+    Examples:
+        >>> mask_secret("sk-1a2b3c4d5e", 4)
+        'sk-1*'
+        >>> mask_secret("AbCdEfGhIj", 3)
+        'AbC*'
+    """
+    if not secret:
+        return ""
+
+    secret_str = str(secret)
+    if len(secret_str) <= visible_chars:
+        return "*" * len(secret_str)
+
+    return secret_str[:visible_chars] + "*" * (len(secret_str) - visible_chars)
+
+
 class _MetricsStore:
     def __init__(self) -> None:
         self._lock = Lock()
@@ -108,4 +138,3 @@ def log_request_event(
         "actor": actor,
     }
     _log.info(json.dumps(payload, ensure_ascii=True))
-
