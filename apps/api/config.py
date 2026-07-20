@@ -29,6 +29,7 @@ class Settings(BaseSettings):
     run_job_max_attempts: int = 3
     run_job_backoff_base_seconds: float = 1.0
     run_job_backoff_max_seconds: float = 30.0
+    vendor_rtp_manifest_hmac_key: str = ""
 
 
 @lru_cache(maxsize=1)
