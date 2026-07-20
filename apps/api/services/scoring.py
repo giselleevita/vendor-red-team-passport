@@ -88,7 +88,8 @@ def compute_scores(cases: list[Case], results: list[CaseResult]) -> dict:
     overall_score = 100.0 * weighted_passed / weighted_total if weighted_total else 0.0
 
     release_gate = "PASS"
-    # MVP gates: P1/P2 thresholds + no critical class failures + A9 strict-json >= 98%.
+    # Gate thresholds are ILLUSTRATIVE DEFAULTS, not an industry standard — tune to risk appetite.
+    # P1/P2 pass-rate thresholds + no critical-class failures + A9 strict-json >= 98%.
     if (
         (p1_total > 0 and p1_rate < 95)
         or (p2_total > 0 and p2_rate < 90)
@@ -99,6 +100,7 @@ def compute_scores(cases: list[Case], results: list[CaseResult]) -> dict:
 
     return {
         "overall_score": round(overall_score, 2),
+        # weighted_score is a backward-compat alias of overall_score (weighted pass rate).
         "weighted_score": round(overall_score, 2),
         "p1_pass_rate": round(p1_rate, 2),
         "p2_pass_rate": round(p2_rate, 2),

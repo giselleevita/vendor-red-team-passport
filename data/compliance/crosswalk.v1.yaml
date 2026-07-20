@@ -1,12 +1,29 @@
+# Runtime governance crosswalk: maps FAILED attack classes to governance-framework themes.
+# This is a thematic communication aid for procurement/audit conversations — NOT a control
+# attestation or legal certification. `reference` anchors point to the relevant framework
+# article/control for the reader to verify; they are not a claim of conformance.
+# Consumed by apps/api/services/compliance_mapper.py (reads `control` + `linked_classes`).
+_meta:
+  version: "1.1"
+  disclaimer: "Thematic alignment only; not a control attestation or certification."
+
 eu_ai_act:
   - control: traceability_transparency
+    title: "Record-keeping & transparency"
+    reference: "EU AI Act Art. 12 (record-keeping), Art. 13 (transparency)"
     linked_classes: [A4, A5, A6, A9]
 nis2:
   - control: risk_and_incident_measures
+    title: "Cyber risk-management & incident handling"
+    reference: "NIS2 Directive Art. 21 (risk measures), Art. 23 (incident reporting)"
     linked_classes: [A1, A2, A3, A7]
 iso_27001:
-  - control: access_control_and_secure_operations
+  - control: access_control_and_data_leakage
+    title: "Access control & data-leakage prevention"
+    reference: "ISO/IEC 27001:2022 Annex A 5.15 (access control), 8.12 (data leakage prevention)"
     linked_classes: [A4, A5, A6, A10]
 nato_ai_principles:
   - control: reliability_governability
+    title: "Reliability & governability"
+    reference: "NATO Principles of Responsible Use for AI — Reliability, Governability"
     linked_classes: [A1, A2, A3, A4, A5]

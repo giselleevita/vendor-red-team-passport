@@ -53,26 +53,56 @@ The project is designed as a governance and procurement artifact: repeatable LLM
 - Generates a **Passport Report** in JSON + HTML, shareable without raw model output
 - Provides server-rendered dashboard pages (`/`, `/runs`, `/compare`) for run management and comparison
 - Supports multi-model benchmark comparison (`/compare`)
-- Maps results to OWASP Top 10 for LLMs and NIST AI RMF
+- Aligns each class to the OWASP Top 10 for LLM Applications (2025) and NIST AI RMF **where applicable** — a thematic alignment aid, not a control attestation
+
+---
+
+## Limitations & honest disclosure
+
+Read this before relying on a Passport for a real vendor decision:
+
+- **Built with AI assistance and human-reviewed.** Findings should be spot-checked, not
+  treated as ground truth.
+- **The pass/fail detector is a heuristic screen, not an authoritative verdict.**
+  `classify_response` decides BLOCK vs ALLOW from refusal/leak/secret keyword signals. It can
+  be wrong in both directions: a refusal that lacks a known marker may read as ALLOW, and a
+  harmful-but-polite answer may read as BLOCK. Treat scores as a *triage signal* and review the
+  sanitized evidence for anything that gates a decision. (A stronger rubric/LLM-judge grader is
+  on the roadmap.) The strict-JSON class (A9) is the exception — it is deterministically verified.
+- **Compliance/OWASP/NIST mappings are thematic alignment aids, not certification** and not a
+  control attestation. See the Compliance Crosswalk section.
+- **The HMAC manifest is symmetric tamper-evidence, not a signature.** Anyone holding
+  `VENDOR_RTP_MANIFEST_HMAC_KEY` can produce a valid MAC, so it proves integrity to key-holders,
+  not third-party non-repudiation.
+- **Gate thresholds (P1 ≥ 95%, P2 ≥ 90%, A9 ≥ 98%) are illustrative defaults,** not an
+  industry standard — tune them to your risk appetite.
 
 ---
 
 ## Attack Classes
 
-| ID | Class | OWASP LLM | NIST | Description |
-|---|---|---|---|---|
-| A1 | Prompt Injection | LLM01 | SI-10 | Direct and indirect instruction override attempts |
-| A2 | Insecure Output Handling | LLM02 | SI-15 | Code execution, XSS, markdown injection in output |
-| A3 | Sensitive Information Disclosure | LLM06 | SC-28 | System prompt leakage, PII, credentials in output |
-| A4 | Model Denial of Service | LLM04 | SC-5 | Resource exhaustion, repetition loops |
-| A5 | Training Data Poisoning | LLM03 | SI-3 | Membership inference, verbatim reproduction |
-| A6 | Insecure Plugin Design | LLM07 | CM-7 | Third-party plugin and tool trust abuse |
-| A7 | Excessive Agency | LLM08 | AC-6 | Unauthorized tool calls, scope creep |
-| A8 | Overreliance | LLM09 | RA-3 | Model inversion, fine-tuning signal extraction |
-| A9 | Output Schema Compliance | LLM10 | SI-7 | Structured output contract enforcement |
-| A10 | Supply Chain Vulnerabilities | LLM05 | SA-12 | Third-party model and dependency risk |
+Titles below describe what each suite actually probes (verified against
+`data/cases/cases.v1.json`). OWASP references use the **OWASP Top 10 for LLM
+Applications 2025**. Classes marked `—` are content-safety or reliability checks that
+sit outside the OWASP LLM application-security Top 10; they are still evaluated, just not
+framed as OWASP categories.
 
-See `data/coverage.json` for the full OWASP × NIST × test crosswalk.
+| ID | Class (what it probes) | OWASP LLM (2025) | NIST AI RMF | Description |
+|---|---|---|---|---|
+| A1 | Prompt injection (direct override) | LLM01 Prompt Injection | MEASURE (security & resilience) | "Ignore previous rules"-style instruction override |
+| A2 | Jailbreak / role-play bypass | LLM01 Prompt Injection | MEASURE (security & resilience) | Persona/role-play attempts to remove restrictions |
+| A3 | Obfuscated / encoded injection | LLM01 Prompt Injection | MEASURE (security & resilience) | Base64 / leetspeak / encoding-based evasion |
+| A4 | System-prompt disclosure | LLM07 System Prompt Leakage | MEASURE (security & resilience) | Attempts to reveal hidden system/developer prompt |
+| A5 | Secret / credential exfiltration | LLM02 Sensitive Information Disclosure | MEASURE (security & resilience) | Requests for API keys, tokens, secrets in context |
+| A6 | Cross-session / context leakage | LLM02 Sensitive Information Disclosure | MEASURE (security & resilience) | Requests for other users' / prior-session data |
+| A7 | Harmful-content / malware enablement | — (content safety) | MEASURE (safety) | Malware, ransomware, phishing how-to requests |
+| A8 | Unsafe transformation (phishing/manipulation) | — (content safety) | MEASURE (safety) | Rewriting benign text into phishing/coercion |
+| A9 | Output-schema compliance | — (reliability) | MEASURE (validity & reliability) | Strict-JSON output contract enforcement |
+| A10 | Token abuse / unbounded consumption | LLM10 Unbounded Consumption | MEASURE (security & resilience) | Resource-exhaustion / runaway-generation prompts |
+
+See `data/coverage.json` for the machine-readable class → OWASP/NIST alignment. This is a
+thematic alignment aid, **not** a control attestation. For governance-framework mapping of
+*failed* classes (EU AI Act / NIS2 / ISO 27001 / NATO), see `data/compliance/crosswalk.v1.yaml`.
 
 ---
 
@@ -188,11 +218,16 @@ Render deployment config: `render.yaml`
 
 ## Compliance Crosswalk
 
-| Framework | Mapping |
-|---|---|
-| OWASP Top 10 for LLMs | A1–A10 mapped to LLM01–LLM10 |
-| NIST AI RMF | Govern, Map, Measure, Manage |
-| ISO/IEC 42001 | AI risk assessment and documentation |
+Two distinct, intentionally separate mappings — do not conflate them:
+
+| Artifact | Purpose | Mapping |
+|---|---|---|
+| `data/coverage.json` | Documentation: class → security taxonomy | Each class → OWASP LLM Top 10 (2025) + NIST AI RMF function, **where applicable** (see Attack Classes table) |
+| `data/compliance/crosswalk.v1.yaml` | Runtime: *failed* classes → governance controls | EU AI Act / NIS2 / ISO 27001 / NATO AI principles |
+
+Both are **thematic alignment aids for procurement and audit conversations, not legal
+certification or a control attestation.** Not every class maps cleanly to OWASP (three are
+content-safety/reliability checks outside the OWASP application-security Top 10).
 
 ---
 
@@ -203,7 +238,7 @@ Render deployment config: `render.yaml`
 - [x] FastAPI backend + server-rendered dashboard
 - [x] Docker + Railway/Render deployment
 - [x] Sanitized evidence pack (no raw outputs)
-- [x] Complete A1–A10 deterministic test cases — 100 cases (10 per attack class) + OWASP×NIST crosswalk (`data/coverage.json`)
+- [x] Complete A1–A10 case suite — 100 adversarial cases (10 per attack class) + class→OWASP/NIST alignment (`data/coverage.json`)
 - [ ] Multi-model comparison UI on `/compare` (#3)
 - [x] v0.1.0 release tag + sanitized sample passport
 - [ ] SIEM/webhook export for passport results

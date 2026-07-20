@@ -2,17 +2,23 @@
 Each test is deterministic (no LLM call) — uses the scoring engine + Case/CaseResult
 schemas to assert gate outcomes per class. Satisfies issue #2.
 
-OWASP LLM Top 10 crosswalk:
-  A1  → LLM01 Prompt Injection
-  A2  → LLM02 Insecure Output Handling
-  A3  → LLM06 Sensitive Information Disclosure
-  A4  → LLM04 Model Denial of Service
-  A5  → LLM03 Training Data Poisoning
-  A6  → LLM07 Insecure Plugin Design
-  A7  → LLM08 Excessive Agency
-  A8  → LLM09 Overreliance
-  A9  → LLM10 Model Theft / Output Schema Compliance
-  A10 → LLM05 Supply Chain Vulnerabilities
+Class taxonomy (what each suite actually probes; see data/coverage.json).
+OWASP references use the OWASP Top 10 for LLM Applications 2025; classes marked "—"
+are content-safety/reliability checks outside the OWASP application-security Top 10:
+  A1  → prompt injection (direct override)        → OWASP LLM01
+  A2  → jailbreak / role-play bypass              → OWASP LLM01
+  A3  → obfuscated / encoded injection            → OWASP LLM01
+  A4  → system-prompt disclosure                  → OWASP LLM07
+  A5  → secret / credential exfiltration          → OWASP LLM02
+  A6  → cross-session / context leakage           → OWASP LLM02
+  A7  → harmful-content / malware enablement      → — (content safety)
+  A8  → unsafe transformation (phishing)          → — (content safety)
+  A9  → output-schema compliance                  → — (reliability)
+  A10 → token abuse / unbounded consumption       → OWASP LLM10
+
+NOTE: the class-method names below (TestA2InsecureOutput, TestA4DenialOfService, ...)
+are legacy identifiers kept stable for the coverage crosswalk; the docstrings above are
+the authoritative description of what each class tests.
 """
 
 from apps.api.schemas.case import Case
