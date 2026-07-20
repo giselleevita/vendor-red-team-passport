@@ -21,6 +21,18 @@ For design rationale and evaluation tradeoffs, see [docs/CASE_STUDY.md](docs/CAS
 
 ---
 
+## Security controls
+
+- JWT authentication and role-based authorization protect non-health endpoints.
+- Tenant ownership is checked before run and passport access.
+- `POST /runs` is rate-limited and request bodies are capped at 10 MB.
+- Audit events can be HMAC-signed with `VENDOR_RTP_MANIFEST_HMAC_KEY` and verified with `scripts/verify_audit_log.py`.
+- Startup rejects enabled authentication with a missing or weak HS256 secret, and rejects SQL job storage without a DSN.
+
+The Featherless API key is required only when executing a live vendor evaluation; offline tests and report review remain available without it.
+
+---
+
 ## Reviewer Quick Start
 
 For a fast technical review:

@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 import uuid
+from datetime import datetime, timezone
 from typing import Literal
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 
 from pydantic import BaseModel, Field
 
@@ -11,10 +14,15 @@ from apps.api.config import get_settings
 from apps.api.services.audit import log_audit_event
 from apps.api.services.auth import RequestContext, hash_subject, require_roles
 from apps.api.services.job_executor import execute_job
-from apps.api.services.jobs import create_job, load_job
+from apps.api.services.jobs import create_job, load_job, update_job
 from apps.api.services.profiles import load_profile
 
 router = APIRouter()
+limiter = Limiter(key_func=get_remote_address)
+
+
+def _utc_now_iso() -> str:
+    return datetime.now(tz=timezone.utc).isoformat()
 
 
 class RunCreateRequest(BaseModel):
@@ -28,6 +36,7 @@ class RunCreateRequest(BaseModel):
 
 
 @router.post("/runs")
+@limiter.limit("10/minute")
 def create_run(
     req: RunCreateRequest,
     request: Request,
@@ -36,6 +45,7 @@ def create_run(
 ) -> dict[str, str]:
     settings = get_settings()
     run_id = str(uuid.uuid4())
+
     try:
         profile = load_profile(req.profile, allow_external_paths=False) if req.profile else None
     except FileNotFoundError as e:
@@ -181,3 +191,64 @@ def get_run_job(
         method=request.method,
     )
     return job
+
+
+@router.post("/runs/jobs/{job_id}/cancel")
+def cancel_run_job(
+    job_id: str,
+    request: Request,
+    ctx: RequestContext = Depends(require_roles("operator", "admin")),
+) -> dict:
+    try:
+        job = load_job(job_id)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e
+    if job is None:
+        raise HTTPException(status_code=404, detail="job_id not found")
+
+    job_tenant = str(job.get("tenant_id", "")).strip()
+    if not job_tenant or job_tenant != ctx.tenant_id:
+        log_audit_event(
+            action="run.job.cancel",
+            result="deny",
+            actor=hash_subject(ctx.subject),
+            tenant_id=ctx.tenant_id,
+            resource=request.url.path,
+            detail="tenant mismatch",
+            method=request.method,
+        )
+        raise HTTPException(status_code=404, detail="job_id not found")
+
+    status = str(job.get("status", "")).strip()
+    if status in {"succeeded", "dead_letter", "cancelled"}:
+        out = job
+    elif status == "running":
+        out = update_job(
+            job_id,
+            {
+                "status": "cancel_requested",
+                "cancel_requested": True,
+            },
+        )
+    elif status == "cancel_requested":
+        out = job
+    else:
+        out = update_job(
+            job_id,
+            {
+                "status": "cancelled",
+                "cancel_requested": True,
+                "finished_at_utc": _utc_now_iso(),
+            },
+        )
+
+    log_audit_event(
+        action="run.job.cancel",
+        result="allow",
+        actor=hash_subject(ctx.subject),
+        tenant_id=ctx.tenant_id,
+        resource=request.url.path,
+        detail=f"status={out.get('status', '')}",
+        method=request.method,
+    )
+    return out

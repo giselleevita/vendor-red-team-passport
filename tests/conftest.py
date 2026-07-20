@@ -35,7 +35,7 @@ def make_hs256_jwt(payload: dict, secret: str) -> str:
 @pytest.fixture(autouse=True)
 def _security_defaults(monkeypatch):
     monkeypatch.setenv("AUTH_ENABLED", "true")
-    monkeypatch.setenv("AUTH_JWT_HS256_SECRET", "test-secret")
+    monkeypatch.setenv("AUTH_JWT_HS256_SECRET", "test-secret-at-least-32-characters")
     monkeypatch.setenv("RBAC_ENABLED", "true")
     monkeypatch.setenv("AUTH_DEFAULT_TENANT_ID", "tenant-default")
     monkeypatch.setenv("AUTH_LEGACY_DEFAULT_TENANT_ID", "tenant-legacy")
@@ -62,7 +62,7 @@ def auth_header():
             "roles": roles or ["viewer"],
             "exp": int(time.time()) + 3600,
         }
-        token = make_hs256_jwt(payload, "test-secret")
+        token = make_hs256_jwt(payload, "test-secret-at-least-32-characters")
         return {"Authorization": f"Bearer {token}"}
 
     return _make
