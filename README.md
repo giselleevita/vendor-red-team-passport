@@ -1,7 +1,6 @@
 # AI Vendor Red-Team Passport
 
 [![CI](https://github.com/giselleevita/vendor-red-team-passport/actions/workflows/ci.yml/badge.svg)](https://github.com/giselleevita/vendor-red-team-passport/actions/workflows/ci.yml)
-[![Deploy](https://github.com/giselleevita/vendor-red-team-passport/actions/workflows/deploy.yml/badge.svg)](https://github.com/giselleevita/vendor-red-team-passport/actions/workflows/deploy.yml)
 ![Coverage](https://img.shields.io/badge/attack%20classes-A1--A10%20✓-brightgreen)
 ![Version](https://img.shields.io/badge/version-0.1.1-green)
 ![Python](https://img.shields.io/badge/python-3.11%2B-blue)
@@ -38,7 +37,7 @@ The Featherless API key is required only when executing a live vendor evaluation
 For a fast technical review:
 
 1. Run `pytest tests/ -v --tb=short --ignore=tests/e2e` to verify the offline suite without vendor API keys.
-2. Set `AUTH_JWT_HS256_SECRET=local-demo-secret` and generate a local bearer token with `python scripts/make_demo_jwt.py`.
+2. Set `AUTH_JWT_HS256_SECRET=local-demo-secret-not-for-production-0123` and generate a local bearer token with `python scripts/make_demo_jwt.py`.
 3. Start the API with `uvicorn apps.api.main:app --reload --port 8000`.
 4. Call protected routes with `Authorization: Bearer <token>`; see `docs/demo-authz.md` for curl examples.
 5. Review `data/coverage.json` and `docs/CASE_STUDY.md` for the OWASP/NIST crosswalk and design rationale.
@@ -114,9 +113,9 @@ git clone https://github.com/giselleevita/vendor-red-team-passport
 cd vendor-red-team-passport
 python -m venv .venv
 source .venv/bin/activate
-pip install -e .[dev]
+pip install -e ".[dev]"
 cp .env.example .env
-export AUTH_JWT_HS256_SECRET=local-demo-secret
+export AUTH_JWT_HS256_SECRET=local-demo-secret-not-for-production-0123
 export TOKEN=$(python scripts/make_demo_jwt.py)
 uvicorn apps.api.main:app --reload --port 8000
 ```
@@ -175,11 +174,13 @@ pytest tests/ --cov=apps --cov-report=term-missing
 
 ---
 
+## How this differs from garak, PyRIT, and promptfoo
+
+[garak](https://github.com/NVIDIA/garak), [PyRIT](https://github.com/Azure/PyRIT), and [promptfoo](https://github.com/promptfoo/promptfoo) are excellent general-purpose LLM probing and evaluation frameworks. This project optimizes for a narrower workflow: **vendor assessment with a shareable artifact**. Every run produces a signed, hash-manifested Passport Report (HTML + JSON) with per-class scores and an explicit PASS/FAIL release gate — built to be attached to a procurement review or vendor questionnaire, not just read by the engineer who ran it. If you need broad adversarial probing, use those tools; if you need a deterministic, comparable, signed artifact per vendor model, use this.
+
 ## Deployment
 
 See [`SECRETS_SETUP.md`](SECRETS_SETUP.md) for Railway/Render environment variables and [`ops/runbook.md`](ops/runbook.md) for production ops.
-
-To enable auto-deploy via Railway: add `RAILWAY_TOKEN` to GitHub → Settings → Secrets → Actions.
 
 Render deployment config: `render.yaml`
 
@@ -202,7 +203,7 @@ Render deployment config: `render.yaml`
 - [x] FastAPI backend + server-rendered dashboard
 - [x] Docker + Railway/Render deployment
 - [x] Sanitized evidence pack (no raw outputs)
-- [x] Complete A1–A10 deterministic test cases — 30 tests + OWASP×NIST crosswalk (`data/coverage.json`)
+- [x] Complete A1–A10 deterministic test cases — 100 cases (10 per attack class) + OWASP×NIST crosswalk (`data/coverage.json`)
 - [ ] Multi-model comparison UI on `/compare` (#3)
 - [x] v0.1.0 release tag + sanitized sample passport
 - [ ] SIEM/webhook export for passport results
