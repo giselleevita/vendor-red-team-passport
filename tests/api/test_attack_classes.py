@@ -2,17 +2,9 @@
 Each test is deterministic (no LLM call) — uses the scoring engine + Case/CaseResult
 schemas to assert gate outcomes per class. Satisfies issue #2.
 
-OWASP LLM Top 10 crosswalk:
-  A1  → LLM01 Prompt Injection
-  A2  → LLM02 Insecure Output Handling
-  A3  → LLM06 Sensitive Information Disclosure
-  A4  → LLM04 Model Denial of Service
-  A5  → LLM03 Training Data Poisoning
-  A6  → LLM07 Insecure Plugin Design
-  A7  → LLM08 Excessive Agency
-  A8  → LLM09 Overreliance
-  A9  → LLM10 Model Theft / Output Schema Compliance
-  A10 → LLM05 Supply Chain Vulnerabilities
+The authoritative versioned OWASP GenAI 2025 crosswalk lives in
+apps/api/services/taxonomy.py. A7/A8 are policy-safety tests and A9 is only
+related to LLM05; no one-to-one Top 10 coverage claim is made.
 """
 
 from apps.api.schemas.case import Case
@@ -87,10 +79,10 @@ class TestA1PromptInjection:
 
 
 # ---------------------------------------------------------------------------
-# A2 — Insecure Output Handling (LLM02)
+# A2 — Jailbreak and role-play (LLM01:2025)
 # ---------------------------------------------------------------------------
 
-class TestA2InsecureOutput:
+class TestA2Jailbreak:
     def test_pass_gate(self):
         case = _make_case("A2-01", "A2")
         summary = compute_scores([case], [_pass_result(case)])
@@ -108,10 +100,10 @@ class TestA2InsecureOutput:
 
 
 # ---------------------------------------------------------------------------
-# A3 — Sensitive Information Disclosure (LLM06)
+# A3 — Obfuscated prompt injection (LLM01:2025)
 # ---------------------------------------------------------------------------
 
-class TestA3SensitiveDisclosure:
+class TestA3ObfuscatedInjection:
     def test_pass_gate(self):
         case = _make_case("A3-01", "A3")
         summary = compute_scores([case], [_pass_result(case)])
@@ -133,10 +125,10 @@ class TestA3SensitiveDisclosure:
 
 
 # ---------------------------------------------------------------------------
-# A4 — Model Denial of Service (LLM04)
+# A4 — System prompt leakage (LLM07:2025)
 # ---------------------------------------------------------------------------
 
-class TestA4DenialOfService:
+class TestA4SystemPromptLeakage:
     def test_pass_gate(self):
         case = _make_case("A4-01", "A4")
         summary = compute_scores([case], [_pass_result(case)])
@@ -155,10 +147,10 @@ class TestA4DenialOfService:
 
 
 # ---------------------------------------------------------------------------
-# A5 — Training Data Poisoning (LLM03)
+# A5 — Secret exfiltration (LLM02:2025)
 # ---------------------------------------------------------------------------
 
-class TestA5TrainingDataPoisoning:
+class TestA5SecretExfiltration:
     def test_pass_gate(self):
         case = _make_case("A5-01", "A5")
         summary = compute_scores([case], [_pass_result(case)])
@@ -176,10 +168,10 @@ class TestA5TrainingDataPoisoning:
 
 
 # ---------------------------------------------------------------------------
-# A6 — Insecure Plugin Design (LLM07)
+# A6 — Cross-session disclosure (LLM02:2025)
 # ---------------------------------------------------------------------------
 
-class TestA6InsecurePlugin:
+class TestA6CrossSessionDisclosure:
     def test_pass_gate(self):
         case = _make_case("A6-01", "A6")
         summary = compute_scores([case], [_pass_result(case)])
@@ -202,10 +194,10 @@ class TestA6InsecurePlugin:
 
 
 # ---------------------------------------------------------------------------
-# A7 — Excessive Agency (LLM08)
+# A7 — Malware enablement (policy-safety)
 # ---------------------------------------------------------------------------
 
-class TestA7ExcessiveAgency:
+class TestA7MalwareEnablement:
     def test_pass_gate(self):
         case = _make_case("A7-01", "A7")
         summary = compute_scores([case], [_pass_result(case)])
@@ -223,10 +215,10 @@ class TestA7ExcessiveAgency:
 
 
 # ---------------------------------------------------------------------------
-# A8 — Overreliance (LLM09)
+# A8 — Unsafe transformation and social engineering (policy-safety)
 # ---------------------------------------------------------------------------
 
-class TestA8Overreliance:
+class TestA8UnsafeTransformation:
     def test_pass_gate(self):
         case = _make_case("A8-01", "A8", severity="medium", priority="P2")
         summary = compute_scores([case], [_pass_result(case)])
@@ -248,7 +240,7 @@ class TestA8Overreliance:
 
 
 # ---------------------------------------------------------------------------
-# A9 — Output Schema Compliance / Model Theft (LLM10)
+# A9 — Structured output reliability (related to LLM05:2025)
 # ---------------------------------------------------------------------------
 
 class TestA9OutputSchemaCompliance:
@@ -284,10 +276,10 @@ class TestA9OutputSchemaCompliance:
 
 
 # ---------------------------------------------------------------------------
-# A10 — Supply Chain Vulnerabilities (LLM05)
+# A10 — Token and resource abuse (LLM10:2025)
 # ---------------------------------------------------------------------------
 
-class TestA10SupplyChain:
+class TestA10ResourceAbuse:
     def test_pass_gate(self):
         case = _make_case("A10-01", "A10")
         summary = compute_scores([case], [_pass_result(case)])

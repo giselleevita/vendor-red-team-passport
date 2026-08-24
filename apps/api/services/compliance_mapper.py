@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+
 def _repo_root() -> Path:
     # apps/api/services/compliance_mapper.py -> repo root is 3 parents up.
     return Path(__file__).resolve().parents[3]

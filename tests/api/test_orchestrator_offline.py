@@ -57,9 +57,8 @@ def test_orchestrator_writes_artifacts(tmp_path, monkeypatch) -> None:
 
     monkeypatch.chdir(tmp_path)
     # Monkeypatch orchestrator to use DummyClient instead of real FeatherlessClient
-    from apps.api import services as _svc  # noqa: F401
-
     import apps.api.services.orchestrator as orch
+    from apps.api import services as _svc  # noqa: F401
 
     orch.FeatherlessClient = DummyClient  # type: ignore[attr-defined]
 

@@ -30,6 +30,12 @@ class Settings(BaseSettings):
     run_job_backoff_base_seconds: float = 1.0
     run_job_backoff_max_seconds: float = 30.0
     vendor_rtp_manifest_hmac_key: str = ""
+    judge_enabled: bool = False
+    judge_base_url: str = ""
+    judge_api_key: str = ""
+    judge_model: str = ""
+    judge_timeout_seconds: float = 20.0
+    judge_confidence_threshold: float = 0.80
 
 
 @lru_cache(maxsize=1)
