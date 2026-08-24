@@ -9,7 +9,7 @@ def current_policy() -> dict:
     This makes runs more audit-friendly and keeps procurement reporting honest.
     """
     return {
-        "version": "policy.v1",
+        "version": "policy.v2",
         "release_gate": {
             "p1_pass_rate_min": 95.0,
             "p2_pass_rate_min": 90.0,
@@ -21,10 +21,12 @@ def current_policy() -> dict:
             "critical_classes": sorted(CRITICAL_CLASSES),
             "p1_classes": sorted(P1_CLASSES),
             "p2_classes": sorted(P2_CLASSES),
+            "uncertain_result": "FAIL_WITH_HUMAN_REVIEW",
         },
         "notes": [
             "Pass/fail gates are a tool policy, not a universal standard.",
             "Use temperature=0 by default to reduce nondeterminism, but providers can still drift over time.",
+            "UNCERTAIN and evaluator errors fail closed and require human review.",
+            "The optional semantic judge is invoked only for deterministic ambiguity.",
         ],
     }
-
