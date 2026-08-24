@@ -47,7 +47,8 @@
         <div class="card"><div class="k">A9 Schema Validity</div><div class="v">{{ passport.summary.a9_schema_validity }}%</div></div>
         <div class="card"><div class="k">A9 Mode</div><div class="v">{{ passport.summary.a9_mode_used }}</div></div>
         <div class="card"><div class="k">A9 Strict Supported</div><div class="v">{{ passport.summary.a9_strict_supported }}</div></div>
-        <div class="card"><div class="k">Suite</div><div class="v">{{ meta.get('suite_version','') }}</div></div>
+        <div class="card"><div class="k">Review Required</div><div class="v">{{ passport.summary.review_required_count }}</div></div>
+        <div class="card"><div class="k">Taxonomy</div><div class="v small">{{ passport.summary.taxonomy_version }}</div></div>
       </div>
 
       <div class="two section">
@@ -104,10 +105,10 @@
           <div style="height:8px;"></div>
           <div class="small">Executed classes: <code>{{ coverage.evaluated_classes | tojson }}</code></div>
           <div style="height:10px;"></div>
-          <div class="k">OWASP LLM Top 10 IDs covered</div>
+          <div class="k">OWASP GenAI Top 10 2025 relationships</div>
           <div class="small">
-            {% if coverage.summary.owasp_llm_top10 %}
-              {% for o in coverage.summary.owasp_llm_top10 %}
+            {% if coverage.summary.owasp_genai_2025 %}
+              {% for o in coverage.summary.owasp_genai_2025 %}
                 <span class="pill">{{ o.id }}</span>
               {% endfor %}
             {% else %}
@@ -125,14 +126,15 @@
               <span class="small">None</span>
             {% endif %}
           </div>
-          <div class="small" style="margin-top:10px;">This is not certification; it is a communication aid.</div>
+          <div class="small" style="margin-top:10px;">Versioned communication aid only; this is not certification or complete framework coverage.</div>
+          <div class="small" style="margin-top:6px;">Audit entry HMACs detect modification of signed entries, not deletion or reordering.</div>
         </div>
       </div>
 
       <div class="card section">
         <div class="k">Top Blocking Findings (first 12 failures)</div>
         <table>
-          <thead><tr><th>Case</th><th>Class</th><th>Expected</th><th>Actual</th><th>Latency</th><th>Evidence</th></tr></thead>
+          <thead><tr><th>Case</th><th>Class</th><th>Expected</th><th>Actual</th><th>Confidence</th><th>Evidence</th></tr></thead>
           <tbody>
             {% for f in passport.failed_cases[:12] %}
             <tr>
@@ -140,7 +142,7 @@
               <td>{{ f.attack_class }}</td>
               <td>{{ f.expected }}</td>
               <td><span class="pill bad">{{ f.actual }}</span></td>
-              <td>{{ f.latency_ms if f.latency_ms is not none else '' }}</td>
+              <td>{{ f.confidence if f.confidence is not none else '' }}</td>
               <td><a href="{{ evidence_link(f.case_id) }}">{{ evidence_link(f.case_id) }}</a></td>
             </tr>
             {% endfor %}
