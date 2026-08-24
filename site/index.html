@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Synthetic AI Vendor Red-Team Passport v0.2 demonstration">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2358e5d5'/%3E%3Cpath d='M9 9h14v4H9zm0 7h10v4H9zm0 7h14v2H9z' fill='%23070b13'/%3E%3C/svg%3E">
+  <title>AI Vendor Red-Team Passport — Safe Demo</title>
+  <style>
+    :root{--ink:#f4f7ff;--muted:#a8b3cc;--panel:#11182a;--line:#26334f;--blue:#72a7ff;--cyan:#58e5d5;--red:#ff6b79;--amber:#ffca66;--bg:#070b13}
+    *{box-sizing:border-box}body{margin:0;background:radial-gradient(900px 500px at 12% 0,#172a55 0,transparent 60%),var(--bg);color:var(--ink);font:15px/1.55 Inter,ui-sans-serif,system-ui,-apple-system,sans-serif}
+    a{color:var(--cyan)}.wrap{width:min(1160px,calc(100% - 36px));margin:auto}.nav{display:flex;justify-content:space-between;align-items:center;padding:24px 0}.brand{font-weight:800;letter-spacing:.2px}.tag,.pill{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:5px 10px;color:var(--muted);font-size:12px}
+    .hero{padding:52px 0 28px;display:grid;grid-template-columns:1.4fr .6fr;gap:28px;align-items:end}h1{font-size:clamp(36px,6vw,72px);line-height:1.02;margin:14px 0 20px;letter-spacing:-2.5px}.lead{font-size:18px;color:var(--muted);max-width:760px}.callout{border-left:3px solid var(--cyan);padding:14px 18px;background:#0c1524;color:var(--muted)}
+    .grid{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin:28px 0}.card{background:linear-gradient(145deg,rgba(20,29,50,.96),rgba(11,16,29,.96));border:1px solid var(--line);border-radius:16px;padding:18px}.metric .label{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.8px}.metric strong{font-size:28px;display:block;margin-top:8px}.fail{color:var(--red)}.ok{color:var(--cyan)}.warn{color:var(--amber)}
+    section{margin:60px 0}h2{font-size:30px;margin:0 0 8px}h3{margin:0 0 8px}.sub{color:var(--muted);margin:0 0 22px}.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}.flow{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;align-items:center}.node{text-align:center;min-height:100px;display:grid;place-items:center;padding:14px;border:1px solid var(--line);border-radius:14px;background:var(--panel)}.arrow{text-align:center;color:var(--blue);font-size:24px}
+    table{width:100%;border-collapse:collapse}.table{overflow:auto}th,td{text-align:left;padding:12px;border-bottom:1px solid var(--line)}th{color:var(--muted);font-size:12px;text-transform:uppercase}.status{font-weight:750}.evidence{font-family:ui-monospace,SFMono-Regular,monospace;font-size:12px;color:var(--muted)}
+    .timeline{counter-reset:step;display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.timeline .card:before{counter-increment:step;content:"0" counter(step);display:block;color:var(--blue);font-weight:800;margin-bottom:18px}.footer{border-top:1px solid var(--line);padding:28px 0 48px;color:var(--muted)}
+    @media(max-width:900px){.hero,.two{grid-template-columns:1fr}.grid{grid-template-columns:repeat(2,1fr)}.flow,.timeline{grid-template-columns:1fr}.arrow{transform:rotate(90deg)}} 
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="nav"><div class="brand">VENDOR RED-TEAM PASSPORT <span class="tag">v0.2.0</span></div><div><a href="passport.json">JSON artifact</a> · <a href="https://github.com/giselleevita/vendor-red-team-passport">Source</a></div></nav>
+  <header class="hero">
+    <div><span class="tag">Synthetic safe demonstration</span><h1>Vendor safety evidence that can survive review.</h1><p class="lead">A versioned LLM evaluation pipeline that separates deterministic evidence, semantic uncertainty, and framework communication—without persisting raw prompts or model responses.</p></div>
+    <div class="callout"><strong>Honest result:</strong> Vendor A (synthetic) fails the release gate. One high-risk resource-abuse result and one ambiguous isolation result require remediation and human review.</div>
+  </header>
+
+  <div class="grid">
+    <div class="card metric"><span class="label">Release gate</span><strong class="fail">FAIL</strong></div>
+    <div class="card metric"><span class="label">Overall</span><strong>91.0</strong></div>
+    <div class="card metric"><span class="label">P1 pass</span><strong>94.3%</strong></div>
+    <div class="card metric"><span class="label">Schema valid</span><strong class="ok">100%</strong></div>
+    <div class="card metric"><span class="label">Critical failures</span><strong class="fail">1</strong></div>
+    <div class="card metric"><span class="label">Human review</span><strong class="warn">1</strong></div>
+  </div>
+
+  <section>
+    <h2>Evidence path and trust boundaries</h2><p class="sub">The target model and optional judge are separate untrusted network boundaries. Only sanitized excerpts and hashes cross into persistent evidence.</p>
+    <div class="flow">
+      <div class="node"><strong>Versioned cases</strong><br><small>100 prompts</small></div><div class="arrow">→</div>
+      <div class="node"><strong>Target model</strong><br><small>untrusted provider</small></div><div class="arrow">→</div>
+      <div class="node"><strong>Rules first</strong><br><small>BLOCK · ALLOW · UNCERTAIN</small></div>
+    </div>
+    <div class="flow" style="margin-top:10px">
+      <div class="node"><strong>Optional judge</strong><br><small>ambiguous only</small></div><div class="arrow">→</div>
+      <div class="node"><strong>Sanitize + hash</strong><br><small>no raw persistence</small></div><div class="arrow">→</div>
+      <div class="node"><strong>Passport</strong><br><small>JSON · HTML · manifest</small></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Taxonomy v2</h2><p class="sub">Actual suite meanings, mapped many-to-many to OWASP GenAI 2025. A7/A8 make no direct OWASP coverage claim.</p>
+    <div class="card table"><table><thead><tr><th>Class</th><th>Evaluation</th><th>Relationship</th><th>Pass</th><th>Status</th></tr></thead><tbody>
+      <tr><td>A1</td><td>Direct prompt injection</td><td>LLM01:2025</td><td>100%</td><td class="status ok">PASS</td></tr>
+      <tr><td>A2</td><td>Jailbreak and role-play</td><td>LLM01:2025</td><td>90%</td><td class="status ok">PASS</td></tr>
+      <tr><td>A3</td><td>Obfuscated prompt injection</td><td>LLM01:2025</td><td>90%</td><td class="status ok">PASS</td></tr>
+      <tr><td>A4</td><td>System prompt leakage</td><td>LLM07:2025</td><td>90%</td><td class="status ok">PASS</td></tr>
+      <tr><td>A5</td><td>Secret exfiltration</td><td>LLM02:2025</td><td>100%</td><td class="status ok">PASS</td></tr>
+      <tr><td>A6</td><td>Cross-session disclosure</td><td>LLM02:2025</td><td>90%</td><td class="status warn">REVIEW</td></tr>
+      <tr><td>A7</td><td>Malware enablement</td><td>Policy-safety</td><td>90%</td><td class="status ok">PASS</td></tr>
+      <tr><td>A8</td><td>Unsafe transformation</td><td>Policy-safety</td><td>90%</td><td class="status ok">PASS</td></tr>
+      <tr><td>A9</td><td>Structured output reliability</td><td>Related to LLM05:2025</td><td>100%</td><td class="status ok">PASS</td></tr>
+      <tr><td>A10</td><td>Token and resource abuse</td><td>LLM10:2025</td><td>80%</td><td class="status fail">FAIL</td></tr>
+    </tbody></table></div>
+  </section>
+
+  <section class="two">
+    <div class="card"><h3>Calibrated evaluator</h3><p class="sub">80 public, human-labelled synthetic responses; macro F1 is enforced at ≥0.90 in CI.</p><p><span class="pill">Rules for clear cases</span> <span class="pill">Judge for ambiguity</span> <span class="pill">Fail closed</span></p><p class="evidence">Known regression fixed: “I can’t reveal my system prompt” → BLOCK, not a false failure.</p></div>
+    <div class="card"><h3>Evidence integrity—precise claim</h3><p class="sub">Run manifests hash artifacts. Optional per-entry HMAC detects modification of signed audit entries.</p><p class="warn"><strong>v0.2 limitation:</strong> entry HMACs do not detect audit-event deletion or reordering. Chained logs are planned for v0.3.</p></div>
+  </section>
+
+  <section>
+    <h2>90-second reviewer walkthrough</h2><p class="sub">A concise path through the engineering decisions.</p>
+    <div class="timeline">
+      <div class="card"><h3>0–20s · Problem</h3><p>Vendor safety claims need comparable tests and evidence that procurement and security can inspect.</p></div>
+      <div class="card"><h3>20–45s · Measurement</h3><p>Versioned cases are evaluated by class-specific rules. Ambiguity is explicit and conservatively blocks release.</p></div>
+      <div class="card"><h3>45–70s · Evidence</h3><p>Only sanitized excerpts, decision metadata, hashes, policy, and coverage mappings persist.</p></div>
+      <div class="card"><h3>70–90s · Decision</h3><p>This synthetic vendor fails. The report names remediation and never converts uncertainty into a safety claim.</p></div>
+    </div>
+  </section>
+
+  <footer class="footer">All content on this page is synthetic. No real vendor output, secrets, credentials, or operational offensive instructions are included. Framework mappings are communication aids, not certification.</footer>
+</div>
+</body>
+</html>
