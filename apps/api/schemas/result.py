@@ -14,7 +14,7 @@ class CaseResult(BaseModel):
     response_excerpt: str
     error: str | None = None
     latency_ms: int | None = None
-    evaluator_version: str = "detector.v2"
+    evaluator_version: str = "detector.v3"
     decision_source: Literal["rules", "judge", "rules+judge"] = "rules"
     confidence: float = Field(default=1.0, ge=0.0, le=1.0)
     reason_codes: list[str] = Field(default_factory=list)

@@ -8,7 +8,7 @@ The first implementation produced deterministic scores but used one global keywo
 
 ## Engineering response
 
-Version 0.2 treats the evaluator itself as security-sensitive:
+Version 0.2 made the evaluator security-sensitive; version 0.3 extends that measurement system:
 
 - Ten internal classes now match the actual 100 prompts instead of imitating a one-to-one OWASP list.
 - A versioned many-to-many crosswalk references OWASP GenAI 2025 and NIST AI RMF 1.0 without claiming certification.
@@ -19,15 +19,16 @@ Version 0.2 treats the evaluator itself as security-sensitive:
 
 ## Calibration evidence
 
-The public calibration corpus contains 80 human-labelled synthetic responses across A1–A10:
+The human-labelled v1 core contains 80 synthetic responses. The v2 regression corpus contains 260 project-labelled synthetic responses across A1–A10:
 
 - balanced safe refusals and unsafe compliance for A1–A8/A10;
 - refusal-then-answer attacks;
-- English, Spanish, French, and German refusal patterns;
+- multilingual refusal and ambiguity patterns across ten languages;
+- adversarial text that attempts to instruct the judge/evaluator to return a chosen verdict;
 - strict and non-compliant JSON for A9;
 - no real secrets or operational payloads.
 
-CI requires macro F1 ≥ 0.90 and zero unsafe false-safe decisions in the critical A4–A7 fixtures. The corpus is intentionally small enough to review manually and is a regression baseline, not a claim of universal language understanding.
+CI requires macro F1 ≥ 0.90, publishes per-class confusion matrices, and permits zero unsafe false-safe decisions in critical A4–A7 fixtures. These synthetic corpora are regression baselines, not claims of real-world prevalence or universal language understanding.
 
 ## Security decisions
 
@@ -35,7 +36,8 @@ CI requires macro F1 ≥ 0.90 and zero unsafe false-safe decisions in the critic
 - Object-level tenant checks remain on report, job, and artifact access.
 - Raw prompts and responses are not persisted; sanitized excerpts and hashes support review.
 - The semantic judge is an explicit external trust boundary because it receives the target prompt and response ephemerally.
-- Audit HMAC language is deliberately narrow: v0.2 detects modification of signed entries, not deletion or reordering.
+- `audit.v2` uses ordered hash/HMAC links and a signed tail checkpoint. Its verifier detects mutation, insertion, deletion, reordering, and truncation when the checkpoint and key are independently protected.
+- Judge retries are bounded and calls publish aggregate token, latency, estimated cost, provider, and retention metadata without persisting raw judge payloads.
 
 ## Outcome
 
@@ -47,6 +49,6 @@ The Passport now communicates three different things separately:
 
 That separation prevents deterministic scoring from being presented as automatic truth. The synthetic demo intentionally fails its vendor so reviewers can see remediation and uncertainty rather than a marketing-perfect result.
 
-## Remaining work
+## Version 0.3 platform outcome
 
-Version 0.3 expands multilingual calibration, adds adversarial judge-injection testing, chains audit entries, enforces streaming request limits, introduces provider adapters and a packaged CLI, and raises coverage to 85%.
+Version 0.3 adds streaming size enforcement, Redis-capable shared rate limits, endpoint-selecting provider adapters with environment-only secrets, a packaged four-command CLI, an 85% coverage gate, CycloneDX SBOM generation, signed GitHub provenance, and scheduled dependency/security scans.

@@ -8,10 +8,17 @@ from apps.api.config import get_settings
 
 
 class FeatherlessClient:
-    def __init__(self) -> None:
+    def __init__(
+        self,
+        *,
+        base_url: str | None = None,
+        api_key: str | None = None,
+        provider_name: str = "featherless",
+    ) -> None:
         settings = get_settings()
-        self.base_url = settings.featherless_base_url.rstrip("/")
-        self.api_key = settings.featherless_api_key
+        self.base_url = (base_url or settings.featherless_base_url).rstrip("/")
+        self.api_key = settings.featherless_api_key if api_key is None else api_key
+        self.provider_name = provider_name
         self.default_model = settings.default_model
         self.timeout = settings.request_timeout_seconds
         self.min_interval = settings.request_min_interval_seconds
@@ -25,7 +32,7 @@ class FeatherlessClient:
 
         headers = {
             "Authorization": f"Bearer {self.api_key}",
-            "User-Agent": "vendor-red-team-passport/0.2.0",
+            "User-Agent": "vendor-red-team-passport/0.3.0",
         }
         limits = httpx.Limits(max_connections=5, max_keepalive_connections=5)
         self._client = httpx.Client(timeout=self.timeout, headers=headers, limits=limits)

@@ -1,0 +1,27 @@
+name: Scheduled Dependency Security
+
+on:
+  schedule:
+    - cron: "17 5 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  dependency-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install pip-audit==2.9.0
+      - run: pip-audit -r requirements.lock
+      - name: Scan tracked files for credential-shaped assignments
+        run: |
+          if git grep -nEI '(api[_-]?key|secret|token)[[:space:]]*[:=][[:space:]]*["'\''"][A-Za-z0-9_/-]{24,}' -- ':!data/calibration/**' ':!tests/**'; then
+            echo 'credential-shaped value found in tracked source'
+            exit 1
+          fi

@@ -10,6 +10,7 @@ from fastapi.responses import JSONResponse
 from slowapi.errors import RateLimitExceeded
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
+from apps.api.config import get_settings
 from apps.api.config_validation import validate_all
 from apps.api.routes.health import router as health_router
 from apps.api.routes.metrics import router as metrics_router
@@ -30,7 +31,7 @@ async def lifespan(_app: FastAPI):
 
 app = FastAPI(
     title="AI Vendor Red-Team Passport API",
-    version="0.2.0",
+    version="0.3.0",
     docs_url=None,
     redoc_url=None,
     openapi_url=None,
@@ -66,15 +67,15 @@ def _tenant_actor(request: Request) -> tuple[str, str]:
 
 @app.middleware("http")
 async def request_size_limit_middleware(request: Request, call_next):
-    """Reject oversized request bodies before application processing."""
+    """Bound streamed bodies without trusting Content-Length."""
     if request.method not in {"GET", "HEAD", "OPTIONS"}:
+        max_size_bytes = get_settings().request_max_body_bytes
         content_length = request.headers.get("content-length")
         if content_length:
             try:
                 size_bytes = int(content_length)
             except ValueError:
                 size_bytes = 0
-            max_size_bytes = 10 * 1024 * 1024
             if size_bytes > max_size_bytes:
                 cid = (request.headers.get("x-correlation-id") or "").strip() or str(uuid.uuid4())
                 response = JSONResponse(
@@ -88,6 +89,23 @@ async def request_size_limit_middleware(request: Request, call_next):
                 )
                 response.headers["X-Correlation-ID"] = cid
                 return response
+        body = bytearray()
+        async for chunk in request.stream():
+            body.extend(chunk)
+            if len(body) > max_size_bytes:
+                cid = (request.headers.get("x-correlation-id") or "").strip() or str(uuid.uuid4())
+                response = JSONResponse(
+                    status_code=413,
+                    content=error_body(
+                        status_code=413,
+                        message="request payload too large",
+                        correlation_id=cid,
+                        detail=f"maximum request size is {max_size_bytes} bytes",
+                    ),
+                )
+                response.headers["X-Correlation-ID"] = cid
+                return response
+        request._body = bytes(body)  # noqa: SLF001 -- replay bounded content downstream
     return await call_next(request)
 
 
@@ -203,4 +221,3 @@ async def handle_unexpected_error(request: Request, exc: Exception):  # noqa: AR
     response = JSONResponse(status_code=500, content=body)
     response.headers["X-Correlation-ID"] = cid
     return response
-

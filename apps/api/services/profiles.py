@@ -78,6 +78,13 @@ def load_profile(name_or_path: str, *, allow_external_paths: bool = True) -> dic
 
     data.setdefault("name", path.stem)
     data.setdefault("source_path", str(path))
+    data.setdefault("provider", "featherless")
+    provider = str(data["provider"]).strip().lower()
+    if provider not in {"featherless", "openai-compatible"}:
+        raise ValueError(f"unsupported profile provider: {provider}")
+    data["provider"] = provider
+    if any(key.lower() in {"api_key", "token", "authorization"} for key in data):
+        raise ValueError("profiles cannot contain provider credentials")
 
     suite_path = (data.get("suite_path") or "").strip()
     if suite_path:
@@ -102,6 +109,8 @@ def list_profiles() -> list[dict]:
                 {
                     "name": data.get("name") or path.stem,
                     "description": data.get("description", ""),
+                    "provider": data.get("provider", "featherless"),
+                    "base_url": data.get("base_url", "configured by environment"),
                     "source_path": data.get("source_path", str(path)),
                 }
             )
