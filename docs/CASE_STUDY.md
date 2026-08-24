@@ -1,47 +1,52 @@
-# Case Study: AI Vendor Red-Team Passport
+# Case Study: Treating LLM Evaluation as a Measurement System
 
 ## Problem
 
-Organizations evaluating LLM vendors need more than a marketing claim that a model is safe. They need repeatable tests, comparable scoring, sanitized evidence, and a report that can be shared with security, procurement, and compliance stakeholders.
+Security and procurement teams need more than a collection of jailbreak prompts. They need to know what was tested, how outputs were judged, which uncertainty remains, and whether the evidence can be reviewed without exposing raw model content.
 
-## Solution
+The first implementation produced deterministic scores but used one global keyword heuristic. That created a concrete validity failure: safe refusals such as “I can’t reveal my system prompt” were classified as unsafe merely because they mentioned the sensitive concept.
 
-Vendor Red-Team Passport runs structured adversarial evaluations against OpenAI-compatible LLM APIs and generates a JSON and HTML Passport Report. The report captures attack coverage, scoring outcomes, framework mappings, sanitized evidence, and a tamper-evident manifest with optional HMAC signing.
+## Engineering response
 
-## Architecture
+Version 0.2 treats the evaluator itself as security-sensitive:
 
-- FastAPI backend for run management and report retrieval.
-- Attack runner covering A1-A10 test classes.
-- Scoring engine for deterministic pass/fail/partial gates.
-- Job store for run state.
-- Passport builder for JSON and HTML reports.
-- Vendor profiles in YAML for configurable targets.
+- Ten internal classes now match the actual 100 prompts instead of imitating a one-to-one OWASP list.
+- A versioned many-to-many crosswalk references OWASP GenAI 2025 and NIST AI RMF 1.0 without claiming certification.
+- Class-specific rules distinguish clear refusal, unsafe compliance, and `UNCERTAIN`.
+- An optional, separately configured judge receives only ambiguous cases.
+- Judge failure and deterministic ambiguity fail closed and require human review.
+- Every result records evaluator version, source, confidence, reason codes, judge model, and review status.
 
-## Engineering Choices
+## Calibration evidence
 
-- Profiles keep vendor-specific configuration out of code.
-- Sanitized evidence reduces the risk of storing sensitive model output.
-- Framework mapping connects technical findings to review language used by auditors.
-- Offline tests make core behavior reviewable without external API dependencies.
-- Docker support makes the service easier to run in a clean environment.
+The public calibration corpus contains 80 human-labelled synthetic responses across A1–A10:
 
-## Security And Reliability Controls
+- balanced safe refusals and unsafe compliance for A1–A8/A10;
+- refusal-then-answer attacks;
+- English, Spanish, French, and German refusal patterns;
+- strict and non-compliant JSON for A9;
+- no real secrets or operational payloads.
 
-- OWASP LLM Top 10 and NIST AI RMF crosswalk.
-- Deterministic gates for reproducible scoring.
-- Tamper-evident artifact manifest with optional HMAC signing.
-- Sanitized evidence handling.
-- CI tests for API behavior and profile validation.
+CI requires macro F1 ≥ 0.90 and zero unsafe false-safe decisions in the critical A4–A7 fixtures. The corpus is intentionally small enough to review manually and is a regression baseline, not a claim of universal language understanding.
 
-## What This Shows
+## Security decisions
 
-This repo is a strong bridge between security engineering and client-facing delivery. It shows API design, testability, reporting, documentation, and stakeholder-aware output.
+- PyJWT replaces handwritten token parsing and requires expiration, issuance, subject, issuer, audience, tenant, and roles claims.
+- Object-level tenant checks remain on report, job, and artifact access.
+- Raw prompts and responses are not persisted; sanitized excerpts and hashes support review.
+- The semantic judge is an explicit external trust boundary because it receives the target prompt and response ephemerally.
+- Audit HMAC language is deliberately narrow: v0.2 detects modification of signed entries, not deletion or reordering.
 
-The strongest product framing is procurement and security-evaluation tooling for organizations adopting AI systems.
+## Outcome
 
-## Next Improvements
+The Passport now communicates three different things separately:
 
-- Publish a synthetic sample Passport Report.
-- Add screenshots of the dashboard.
-- Add CLI support for CI-only usage.
-- Add export integrations for SIEM or GRC workflows.
+1. What the target model returned.
+2. How confidently the evaluator interpreted it.
+3. Whether policy permits release or requires review.
+
+That separation prevents deterministic scoring from being presented as automatic truth. The synthetic demo intentionally fails its vendor so reviewers can see remediation and uncertainty rather than a marketing-perfect result.
+
+## Remaining work
+
+Version 0.3 expands multilingual calibration, adds adversarial judge-injection testing, chains audit entries, enforces streaming request limits, introduces provider adapters and a packaged CLI, and raises coverage to 85%.

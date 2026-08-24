@@ -1,42 +1,37 @@
-# Architecture (Local-First)
+# Architecture and Data Flow
 
-## High-Level
-- FastAPI service orchestrates runs and serves a small HTML UI.
-- Evaluations call the Featherless OpenAI-compatible chat API.
-- Artifacts are written to disk under `reports/` and served through authenticated, tenant-scoped run routes.
-- Scoring is deterministic given a suite version and recorded parameters.
+## Runtime flow
 
-## Components
-- `apps/api/routes/run.py`: `POST /runs` orchestration entrypoint (JSON body).
-- `profiles/*.yaml`: run profiles (quick gates, full suite, high sensitivity).
-- `apps/api/services/orchestrator.py`: run orchestrator + HTML passport renderer.
-- `apps/api/services/evaluator.py`: case execution, A9 structured-output handling, latency tracking.
-- `apps/api/services/redaction.py`: sanitized-only persistence for evidence excerpts.
-- `apps/api/services/run_store.py`: artifact layout and persistence.
-- `apps/api/services/manifest.py`: tamper-evident manifest (sha256, optional HMAC).
-
-## Data Flow (Mermaid)
 ```mermaid
 flowchart LR
-  U["Operator (Browser/CLI)"] -->|"POST /runs"| API["FastAPI Orchestrator"]
-  API -->|"load"| SUITE["Case Suite (data/cases/*.json)"]
-  API -->|"chat prompts"| EXT["Featherless API (OpenAI-compatible)"]
-  EXT -->|"responses"| API
-  API -->|"sanitize + score"| SCORE["Scoring + Compliance Mapping"]
-  SCORE -->|"write artifacts"| DISK["reports/runs/<run_id>/ (run.json, passport.json, passport.html, cases/*.json)"]
-  U -->|"GET /runs/<id>"| API
-  U -->|"GET /runs/<id>/artifacts/<name>"| API
-  U -->|"GET /runs/<id>/cases/<case_id>.json"| API
-  API -->|"tenant check + read artifact"| DISK
+  O[Analyst or CI] -->|Bearer JWT| API[FastAPI]
+  API --> CASES[Versioned cases and profile]
+  CASES --> TARGET[Target LLM provider]
+  TARGET --> RULES[Class-specific detector]
+  RULES -->|clear| SCORE[Deterministic policy]
+  RULES -->|UNCERTAIN and enabled| JUDGE[Separate semantic judge]
+  JUDGE --> SCORE
+  SCORE --> SAN[Sanitize and hash]
+  SAN --> STORE[Run-scoped evidence]
+  STORE --> PASS[JSON and HTML Passport]
 ```
 
-## Artifact Contract (Per Run)
-Each run produces:
-- `run.json`: model, params, suite_version, timestamps, a9_mode_used
-- `passport.json`: decision summary, per-class scoring, failed cases
-- `passport.html`: decision-ready report
-- `policy.json`: explicit scoring/gating policy for audit trails
-- `coverage.json`: OWASP/NIST crosswalk coverage (heuristic, communication aid)
-- `compliance.json`: control mapping output for the run
-- `manifest.json`: sha256 list for artifacts (optional HMAC signature)
-- `cases/*.json`: per-case sanitized evidence (excerpt + hashes + latency)
+## Trust boundaries
+
+- **Caller to API:** Bearer JWT, role checks, and object-level tenant ownership.
+- **API to target provider:** prompts leave the local process; provider handling is outside this repository.
+- **API to semantic judge:** only ambiguous prompt/response pairs are transmitted when explicitly enabled. The judge is separate from the evaluated model.
+- **Process to filesystem:** raw prompts and raw responses are excluded; sanitized excerpts, hashes, decisions, metadata, and reports persist.
+- **Static public demo:** synthetic content only; it contains no API and no credentials.
+
+## Components
+
+- FastAPI routes handle authenticated run, report, artifact, and comparison access.
+- Profiles select suite, class subset, structured-output mode, and model parameters; credentials remain environment configuration.
+- The evaluator produces `BLOCK`, `ALLOW`, `UNCERTAIN`, strict-schema, or error decisions with provenance.
+- The scoring service applies a versioned fail-closed policy.
+- The run store writes tenant-owned artifacts and manifests under the configured reports directory.
+
+## Evidence contract
+
+Each case artifact contains a sanitized excerpt, prompt/excerpt hashes, verdict, pass state, latency, evaluator version, decision source, confidence, reason codes, judge model, and human-review flag. Each run records taxonomy and evaluation-policy versions so historical results remain interpretable after future changes.

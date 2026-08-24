@@ -1,69 +1,38 @@
-# Threat Model (Local-First, Defensive Evaluation Tool)
+# Threat Model
 
-## Scope
-This threat model covers the local operator workstation running the FastAPI service, local artifacts under `reports/`, and outbound calls to the external LLM provider API (Featherless OpenAI-compatible endpoint).
+## Scope and assets
 
-## Assets
-- Provider API key (`FEATHERLESS_API_KEY`) and any other environment secrets
-- Case suite (`data/cases/*.json`)
-- Run artifacts (`reports/runs/<run_id>/...`) including sanitized evidence excerpts
-- Benchmark summaries (`reports/benchmarks/*.md/*.json`)
+The model covers the FastAPI service, configured report/job storage, target-model requests, optional semantic-judge requests, case suites, API/JWT secrets, and generated Passport evidence.
 
-## Trust Boundaries
-- Operator workstation (trusted boundary)
-- Local FastAPI process (trusted boundary, but must be hardened against accidental leakage)
-- Filesystem storage for artifacts (trusted boundary; still needs safe defaults)
-- External provider API (untrusted network boundary)
+Primary assets are provider credentials, tenant-scoped artifacts, evaluation integrity, audit records, case intellectual property, and the confidentiality of prompts/responses.
 
-## Attacker Models
-- Local attacker with filesystem access (steals keys/artifacts)
-- Network attacker observing outbound traffic (if TLS is compromised or misconfigured)
-- Malicious/compromised model provider (returns unexpected content, attempts prompt injection, or logs prompts)
-- Accidental insider leakage via sharing artifacts (copy/paste of evidence excerpts)
+## Attacker capabilities
 
-## Top Risks and Mitigations
-### 0) Unauthorized API access (missing/weak identity controls)
-- Risk: endpoints can be invoked without identity, allowing data exposure or unauthorized runs.
-- Mitigations:
-  - Enforce bearer-token authentication for non-health routes.
-  - Enforce role-based authorization (viewer/auditor/operator/admin).
-  - Log allow/deny audit events for sensitive actions.
+- An unauthenticated or low-privilege API caller.
+- An authenticated user attempting cross-tenant access.
+- A malicious target model returning prompt injection, deceptive refusal, secrets, or oversized content.
+- A compromised or manipulated semantic judge.
+- A local attacker who can modify filesystem artifacts but does not possess signing keys.
+- An operator who accidentally publishes real vendor evidence.
 
-### 1) Secret leakage (API keys, tokens) into artifacts
-- Risk: prompts/responses could contain secret-like content; logs/artifacts could leak it.
-- Mitigations:
-  - Persist sanitized excerpts only (`response_excerpt_sanitized`), redact secret-like patterns and code blocks.
-  - Do not print `.env` contents.
-  - Store only hashes for prompts (not raw prompts) in per-case evidence.
-  - Use `manifest.json` (optional HMAC) to detect post-run artifact tampering if stored securely.
+## Trust boundaries and mitigations
 
-### 2) Raw offensive content captured and shared
-- Risk: evidence packs could contain unsafe procedural guidance.
-- Mitigations:
-  - Excerpts are capped and sanitized (redaction rules).
-  - Benchmarks/one-pagers use extra “safe snippet” logic and refuse code blocks/secret-like content.
+| Boundary | Main threats | Controls |
+|---|---|---|
+| Caller → API | forged tokens, privilege escalation, IDOR | PyJWT algorithm allowlist and required claims; RBAC; tenant ownership; opaque IDs |
+| API → target provider | prompt disclosure, provider drift, malformed output | explicit provider boundary; timeouts/retries; versioned inputs; conservative evaluation |
+| Target output → evaluator | refusal-then-answer, obfuscation, evaluator evasion | class-specific rules; `UNCERTAIN`; calibration regression; optional separate judge |
+| API → judge | data disclosure, judge injection, correlated failure | disabled by default; separate model; data-as-data prompt; strict output schema; low confidence fails closed |
+| Evaluator → storage | raw secret/offensive content persistence | sanitization, excerpt caps, hashes, no raw prompt/response persistence |
+| Tenant → artifacts | cross-tenant report disclosure, traversal | per-object ownership checks; allowlisted artifact names; validated IDs |
+| Filesystem evidence | artifact modification | SHA-256 manifest and optional HMAC |
+| Repository/Pages | accidental real output publication | synthetic-only fixture, secret scan, static-demo tests |
 
-### 3) Non-reproducible decisions due to mutable params/provider drift
-- Risk: evaluation output changes over time; procurement decisions become non-auditable.
-- Mitigations:
-  - Record run metadata (model, params, suite_version, timestamps) in `run.json`.
-  - Keep scoring deterministic given the recorded inputs.
+## Known residual risks
 
-### 4) Over-claiming compliance
-- Risk: users interpret control mapping as certification.
-- Mitigations:
-  - Explicit transparency notes (`docs/transparency.md`).
-  - Reports frame compliance mapping as “mapping hints”, not legal attestation.
-
-### 5) Provider structured-output enforcement uncertainty (A9)
-- Risk: “strict JSON” may not be enforced by some models/providers, causing false confidence.
-- Mitigations:
-  - Conservative mode selection: default `a9_mode=auto`, only use strict if enforceability probe passes.
-  - Treat non-JSON as failure for A9 cases.
-
-### 6) Cross-tenant artifact exposure
-- Risk: a user from tenant A can read runs from tenant B.
-- Mitigations:
-  - Tenant id is recorded per run metadata.
-  - Read endpoints enforce tenant ownership checks.
-  - Legacy runs must be backfilled via migration before broad multi-tenant rollout.
+- Text rules and semantic judges can both be wrong; v0.2 calibration is a bounded regression corpus, not proof of universal accuracy.
+- The judge receives raw target prompt/response data ephemerally; its provider retention policy must be reviewed separately.
+- Per-entry audit HMACs cannot detect deleted or reordered entries in v0.2.
+- `Content-Length` request limits do not cover every streaming/chunked deployment path; enforce edge limits until v0.3 streaming middleware lands.
+- File/in-memory stores and rate limiting are not multi-instance production controls.
+- Framework crosswalks can be misread as attestation; every report carries a non-certification disclaimer.
