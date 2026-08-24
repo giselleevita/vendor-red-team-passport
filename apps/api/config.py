@@ -8,6 +8,7 @@ class Settings(BaseSettings):
 
     featherless_api_key: str = ""
     featherless_base_url: str = "https://api.featherless.ai/v1"
+    target_api_key: str = ""
     default_model: str = "moonshotai/Kimi-K2-Instruct"
     request_timeout_seconds: int = 45
     request_min_interval_seconds: float = 1.0
@@ -36,6 +37,14 @@ class Settings(BaseSettings):
     judge_model: str = ""
     judge_timeout_seconds: float = 20.0
     judge_confidence_threshold: float = 0.80
+    judge_provider: str = "openai-compatible"
+    judge_max_retries: int = 1
+    judge_retry_backoff_seconds: float = 0.5
+    judge_data_retention: str = "ephemeral"
+    judge_input_cost_per_million_tokens_usd: float = 0.0
+    judge_output_cost_per_million_tokens_usd: float = 0.0
+    request_max_body_bytes: int = 10 * 1024 * 1024
+    rate_limit_storage_uri: str = "memory://"
 
 
 @lru_cache(maxsize=1)

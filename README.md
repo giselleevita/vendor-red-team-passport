@@ -2,8 +2,8 @@
 
 [![CI](https://github.com/giselleevita/vendor-red-team-passport/actions/workflows/ci.yml/badge.svg)](https://github.com/giselleevita/vendor-red-team-passport/actions/workflows/ci.yml)
 ![Cases](https://img.shields.io/badge/evaluation%20cases-100-blue)
-![Calibration](https://img.shields.io/badge/calibration-80%20labelled%20responses-2ea44f)
-![Version](https://img.shields.io/badge/version-0.2.0-green)
+![Calibration](https://img.shields.io/badge/calibration-260%20synthetic%20responses-2ea44f)
+![Version](https://img.shields.io/badge/version-0.3.0-green)
 ![Python](https://img.shields.io/badge/python-3.11%20%7C%203.12-blue)
 ![License](https://img.shields.io/badge/license-Apache--2.0-green)
 
@@ -11,15 +11,15 @@
 
 Vendor Red-Team Passport runs versioned adversarial cases against an LLM endpoint and produces a reviewable Passport: JSON and HTML results, deterministic release gates, sanitized evidence, policy metadata, and a hashed artifact manifest.
 
-The current provider adapter targets the Featherless OpenAI-compatible API. The project does **not** claim universal vendor support, certification, or complete OWASP/NIST coverage.
+Provider profiles can select Featherless or another OpenAI-compatible endpoint while credentials remain environment-only. The project does **not** claim universal vendor support, certification, or complete OWASP/NIST coverage.
 
 [View the synthetic safe demo](https://giselleevita.github.io/vendor-red-team-passport/) · [Open the sample JSON](site/passport.json) · [Read the case study](docs/CASE_STUDY.md)
 
-![Synthetic Passport v0.2 report](docs/screenshots/passport-v020.png)
+![Synthetic Passport v0.3 report](docs/screenshots/passport-v030.png)
 
 ## Why this is different
 
-- **Measurement validity:** 80 public, human-labelled synthetic responses calibrate the evaluator in CI.
+- **Measurement validity:** an 80-response human-labelled core is retained, while a 260-response v2 corpus adds multilingual, ambiguity, and judge-injection regressions.
 - **Explicit uncertainty:** deterministic rules return `BLOCK`, `ALLOW`, or `UNCERTAIN`; uncertainty fails closed.
 - **Hybrid without hidden dependence:** an optional, separately configured judge sees only ambiguous responses.
 - **Evidence discipline:** raw prompts and responses are not persisted; stored excerpts are sanitized and hashed.
@@ -36,7 +36,7 @@ Runtime enforcement is a different control. For deployed-agent policy enforcemen
 4. Judge failure, malformed output, low confidence, or no configured judge leaves the result `UNCERTAIN`.
 5. `UNCERTAIN` never becomes a pass and increments `review_required_count`.
 
-The calibration suite enforces macro F1 ≥ 0.90 and zero unsafe false-safe decisions in critical A4–A7 fixtures. It includes refusal-then-answer, multilingual refusal, paraphrase, schema, and obfuscation cases.
+The calibration suite publishes per-class confusion matrices, enforces macro F1 ≥ 0.90, and allows zero unsafe false-safe decisions in critical A4–A7 fixtures. It includes refusal-then-answer, multilingual refusal, schema, ambiguity, and adversarial judge-injection cases.
 
 Known regression fixed in v0.2:
 
@@ -111,7 +111,7 @@ Each run writes:
 - `manifest.json` — SHA-256 hashes and optional HMAC signature.
 - `cases/*.json` — sanitized evidence, hashes, confidence, reasons, and review status.
 
-Audit-event HMACs detect modification of signed entries. The v0.2 audit format does not detect entry deletion or reordering; chained audit integrity is planned for v0.3.
+`audit.v2` uses a concurrency-safe sequence, previous-event hash, current-event HMAC, and signed tail checkpoint. Verification detects modification, insertion, internal deletion, reordering, and tail truncation. Protect the checkpoint and key independently from the log host.
 
 ## API and profiles
 
@@ -126,15 +126,15 @@ Audit-event HMACs detect modification of signed entries. The v0.2 audit format d
 | `GET` | `/metrics` | Auditor/admin metrics |
 | `GET` | `/compare` | Compare two runs |
 
-Profiles select the case suite, class subset, structured-output mode, and model parameters. Endpoint credentials remain environment configuration; secrets do not belong in profile files.
+Profiles select the case suite, class subset, structured-output mode, model parameters, adapter, and target endpoint. Endpoint credentials remain environment configuration; profile files reject credential-shaped fields.
 
 ## Security posture
 
 - Strict PyJWT HS256 validation with required `exp`, `iat`, `sub`, `iss`, `aud`, tenant, and roles claims.
 - Role-based access and object-level tenant ownership checks.
 - Sanitized evidence persistence and safe Jinja auto-escaping.
-- Disabled production API docs, generic errors, request correlation IDs, security response headers, rate limits, and request-size checks.
-- CodeQL, Ruff, locked dependencies, dependency audit, Docker build, and Python 3.11/3.12 tests in CI.
+- Disabled production API docs, generic errors, request correlation IDs, security response headers, streaming request-size enforcement, and Redis-capable distributed rate limits.
+- CodeQL, Ruff, locked dependencies, dependency audit, Docker build, Python 3.11/3.12 tests, SBOM generation, and signed release provenance.
 
 See [SECURITY.md](SECURITY.md), [threat model](docs/threat-model.md), and [transparency notes](docs/transparency.md).
 
@@ -143,18 +143,18 @@ See [SECURITY.md](SECURITY.md), [threat model](docs/threat-model.md), and [trans
 - Deterministic text rules cannot fully understand natural language; ambiguous results require review or an optional judge.
 - A semantic judge is another untrusted provider boundary and receives the evaluated prompt/response ephemerally.
 - Provider behavior can drift even at temperature zero.
-- Filesystem storage and in-memory/file rate limiting are development defaults, not multi-instance production architecture.
+- Filesystem job/artifact storage remains a development default; production deployments should use SQL jobs, Redis rate limits, and durable external artifact storage.
 - Framework mappings are not compliance attestations.
 
 ## Development
 
 ```bash
 ruff check .
-pytest tests/ --ignore=tests/e2e --cov=apps/api --cov-fail-under=75
+pytest tests/ --ignore=tests/e2e --cov=apps/api --cov-fail-under=85
 docker build -t vendor-red-team-passport:local .
 ```
 
-See [CONTRIBUTING.md](CONTRIBUTING.md), [architecture](docs/architecture.md), and the [v0.3 roadmap](docs/v0.3-roadmap.md).
+The packaged CLI exposes `vendor-rtp run`, `benchmark`, `verify-manifest`, and `verify-audit`. See [CONTRIBUTING.md](CONTRIBUTING.md), [architecture](docs/architecture.md), and the [v0.3 delivery notes](docs/v0.3-roadmap.md).
 
 ## Ethics and license
 

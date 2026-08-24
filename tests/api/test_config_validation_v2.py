@@ -48,3 +48,19 @@ def test_judge_confidence_threshold_is_bounded(monkeypatch) -> None:
     get_settings.cache_clear()
     with pytest.raises(RuntimeError, match="between 0.5 and 1.0"):
         validate_judge_config()
+
+
+def test_judge_rejects_credentials_in_url_and_negative_cost(monkeypatch) -> None:
+    monkeypatch.setenv("JUDGE_ENABLED", "true")
+    monkeypatch.setenv("JUDGE_BASE_URL", "https://user:pass@judge.example.invalid/v1")
+    monkeypatch.setenv("JUDGE_API_KEY", "synthetic")
+    monkeypatch.setenv("JUDGE_MODEL", "judge-model")
+    get_settings.cache_clear()
+    with pytest.raises(RuntimeError, match="cannot contain credentials"):
+        validate_judge_config()
+
+    monkeypatch.setenv("JUDGE_BASE_URL", "https://judge.example.invalid/v1")
+    monkeypatch.setenv("JUDGE_INPUT_COST_PER_MILLION_TOKENS_USD", "-1")
+    get_settings.cache_clear()
+    with pytest.raises(RuntimeError, match="cannot be negative"):
+        validate_judge_config()

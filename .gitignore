@@ -10,9 +10,12 @@ build/
 .env
 .DS_Store
 output/playwright/
+.playwright-cli/
 reports/passports/*.html
 reports/benchmarks/*
 !reports/benchmarks/.gitkeep
 reports/audit/*.log
+reports/audit/*.lock
+reports/audit/*.checkpoint.json
 reports/jobs/*.json
 reports/jobs.db

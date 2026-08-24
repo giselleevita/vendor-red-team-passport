@@ -12,7 +12,7 @@ This is a defensive evaluation harness for authorized LLM vendor assessment. It 
 - `UNCERTAIN` and errors fail closed and require human review.
 - A9 uses deterministic strict-JSON validation.
 
-The public 80-response calibration corpus is synthetic and human-labelled. Its metrics measure regression performance on that corpus only.
+The public 80-response v1 core is synthetic and human-labelled. The 260-response v2 project-labelled synthetic corpus adds multilingual, ambiguity, and judge-injection regressions. Metrics measure only these fixtures, not production prevalence.
 
 ## Evidence handling
 
@@ -20,7 +20,7 @@ The tool persists sanitized, capped excerpts; verdict metadata; hashes; and timi
 
 ## Integrity claims
 
-Artifact manifests contain SHA-256 hashes and may be HMAC-signed. Audit entries may also be individually HMAC-signed. In v0.2 this detects modification of signed content but does not prove completeness or ordering; deletion/reordering detection requires the planned chained v0.3 format.
+Artifact manifests contain SHA-256 hashes and may be HMAC-signed. `audit.v2` records a sequence, previous-event hash, event HMAC, and signed tail checkpoint. Verification covers modification, insertion, internal deletion, reordering, and tail truncation; the checkpoint and key must be protected independently for that completeness claim to hold.
 
 ## Standards claims
 

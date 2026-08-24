@@ -45,7 +45,9 @@ def test_signed_audit_event_verifies(monkeypatch, tmp_path) -> None:
     )
 
     event = json.loads(log_path.read_text(encoding="utf-8"))
-    assert event["hmac_sha256"]
+    assert event["event_hmac_sha256"]
+    assert event["format_version"] == "audit.v2"
+    assert event["sequence"] == 1
     assert verify_audit_log(log_path, "audit-secret") is True
 
 

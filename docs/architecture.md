@@ -6,7 +6,8 @@
 flowchart LR
   O[Analyst or CI] -->|Bearer JWT| API[FastAPI]
   API --> CASES[Versioned cases and profile]
-  CASES --> TARGET[Target LLM provider]
+  CASES --> ADAPTER[Provider adapter]
+  ADAPTER --> TARGET[Target LLM provider]
   TARGET --> RULES[Class-specific detector]
   RULES -->|clear| SCORE[Deterministic policy]
   RULES -->|UNCERTAIN and enabled| JUDGE[Separate semantic judge]
@@ -22,15 +23,17 @@ flowchart LR
 - **API to target provider:** prompts leave the local process; provider handling is outside this repository.
 - **API to semantic judge:** only ambiguous prompt/response pairs are transmitted when explicitly enabled. The judge is separate from the evaluated model.
 - **Process to filesystem:** raw prompts and raw responses are excluded; sanitized excerpts, hashes, decisions, metadata, and reports persist.
+- **Audit integrity:** ordered events and a signed checkpoint share an HMAC key; production operators should isolate that key and checkpoint from the log host.
 - **Static public demo:** synthetic content only; it contains no API and no credentials.
 
 ## Components
 
 - FastAPI routes handle authenticated run, report, artifact, and comparison access.
-- Profiles select suite, class subset, structured-output mode, and model parameters; credentials remain environment configuration.
+- Profiles select suite, class subset, structured-output mode, model parameters, adapter, and HTTPS endpoint; credentials remain environment configuration.
 - The evaluator produces `BLOCK`, `ALLOW`, `UNCERTAIN`, strict-schema, or error decisions with provenance.
 - The scoring service applies a versioned fail-closed policy.
 - The run store writes tenant-owned artifacts and manifests under the configured reports directory.
+- Request bodies are bounded while streaming. SlowAPI uses memory locally or Redis for shared multi-instance rate limits.
 
 ## Evidence contract
 
