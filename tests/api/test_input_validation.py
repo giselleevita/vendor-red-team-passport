@@ -1,7 +1,7 @@
 from pathlib import Path
 
-from fastapi.testclient import TestClient
 import pytest
+from fastapi.testclient import TestClient
 
 from apps.api.main import app
 from apps.api.services.run_store import validate_run_id

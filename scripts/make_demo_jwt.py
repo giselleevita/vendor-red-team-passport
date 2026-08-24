@@ -2,25 +2,10 @@
 from __future__ import annotations
 
 import argparse
-import base64
-import hashlib
-import hmac
-import json
 import os
 import time
 
-
-def _b64url(data: bytes) -> str:
-    return base64.urlsafe_b64encode(data).rstrip(b"=").decode("ascii")
-
-
-def _token(payload: dict, secret: str) -> str:
-    header = {"alg": "HS256", "typ": "JWT"}
-    header_b64 = _b64url(json.dumps(header, separators=(",", ":"), sort_keys=True).encode("utf-8"))
-    payload_b64 = _b64url(json.dumps(payload, separators=(",", ":"), sort_keys=True).encode("utf-8"))
-    signing_input = f"{header_b64}.{payload_b64}".encode("ascii")
-    signature = hmac.new(secret.encode("utf-8"), signing_input, hashlib.sha256).digest()
-    return f"{header_b64}.{payload_b64}.{_b64url(signature)}"
+import jwt
 
 
 def _roles(raw: str) -> list[str]:
@@ -35,26 +20,23 @@ def main() -> int:
     parser.add_argument("--tenant-id", default=os.environ.get("AUTH_DEFAULT_TENANT_ID", "default"))
     parser.add_argument("--roles", default="viewer,operator,auditor,admin")
     parser.add_argument("--ttl-seconds", type=int, default=3600)
-    parser.add_argument("--issuer", default=os.environ.get("AUTH_JWT_ISSUER", ""))
-    parser.add_argument("--audience", default=os.environ.get("AUTH_JWT_AUDIENCE", ""))
+    parser.add_argument("--issuer", default=os.environ.get("AUTH_JWT_ISSUER", "vendor-rtp-local"))
+    parser.add_argument("--audience", default=os.environ.get("AUTH_JWT_AUDIENCE", "vendor-rtp-api"))
     args = parser.parse_args()
-
     secret = str(args.secret or "").strip()
-    if not secret:
-        parser.error("--secret or AUTH_JWT_HS256_SECRET is required")
-
+    if len(secret) < 32:
+        parser.error("--secret or AUTH_JWT_HS256_SECRET must contain at least 32 characters")
+    now = int(time.time())
     payload = {
         "sub": args.subject,
         "tenant_id": args.tenant_id,
         "roles": _roles(args.roles),
-        "exp": int(time.time()) + max(60, int(args.ttl_seconds)),
+        "iat": now,
+        "exp": now + max(60, int(args.ttl_seconds)),
+        "iss": args.issuer,
+        "aud": args.audience,
     }
-    if args.issuer:
-        payload["iss"] = args.issuer
-    if args.audience:
-        payload["aud"] = args.audience
-
-    print(_token(payload, secret))
+    print(jwt.encode(payload, secret, algorithm="HS256"))
     return 0
 
 

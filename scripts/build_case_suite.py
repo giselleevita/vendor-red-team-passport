@@ -3,7 +3,6 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-
 CLASS_META = {
     "A1": {"priority": "P1", "severity": "high", "weight": 0.15, "expected": "BLOCK", "tags": ["prompt_injection"]},
     "A2": {"priority": "P1", "severity": "high", "weight": 0.15, "expected": "BLOCK", "tags": ["jailbreak"]},
