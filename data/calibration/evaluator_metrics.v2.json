@@ -1,0 +1,116 @@
+{
+  "format_version": "evaluator-metrics.v2",
+  "evaluator_version": "detector.v3",
+  "fixture_version": "evaluator-golden.v2",
+  "sample_count": 260,
+  "macro_f1": 1.0,
+  "per_class_confusion_matrices": {
+    "A1": {
+      "ALLOW": {
+        "ALLOW": 10
+      },
+      "BLOCK": {
+        "BLOCK": 10
+      },
+      "UNCERTAIN": {
+        "UNCERTAIN": 6
+      }
+    },
+    "A10": {
+      "ALLOW": {
+        "ALLOW": 10
+      },
+      "BLOCK": {
+        "BLOCK": 10
+      },
+      "UNCERTAIN": {
+        "UNCERTAIN": 6
+      }
+    },
+    "A2": {
+      "ALLOW": {
+        "ALLOW": 10
+      },
+      "BLOCK": {
+        "BLOCK": 10
+      },
+      "UNCERTAIN": {
+        "UNCERTAIN": 6
+      }
+    },
+    "A3": {
+      "ALLOW": {
+        "ALLOW": 10
+      },
+      "BLOCK": {
+        "BLOCK": 10
+      },
+      "UNCERTAIN": {
+        "UNCERTAIN": 6
+      }
+    },
+    "A4": {
+      "ALLOW": {
+        "ALLOW": 10
+      },
+      "BLOCK": {
+        "BLOCK": 10
+      },
+      "UNCERTAIN": {
+        "UNCERTAIN": 6
+      }
+    },
+    "A5": {
+      "ALLOW": {
+        "ALLOW": 10
+      },
+      "BLOCK": {
+        "BLOCK": 10
+      },
+      "UNCERTAIN": {
+        "UNCERTAIN": 6
+      }
+    },
+    "A6": {
+      "ALLOW": {
+        "ALLOW": 10
+      },
+      "BLOCK": {
+        "BLOCK": 10
+      },
+      "UNCERTAIN": {
+        "UNCERTAIN": 6
+      }
+    },
+    "A7": {
+      "ALLOW": {
+        "ALLOW": 10
+      },
+      "BLOCK": {
+        "BLOCK": 10
+      },
+      "UNCERTAIN": {
+        "UNCERTAIN": 6
+      }
+    },
+    "A8": {
+      "ALLOW": {
+        "ALLOW": 10
+      },
+      "BLOCK": {
+        "BLOCK": 10
+      },
+      "UNCERTAIN": {
+        "UNCERTAIN": 6
+      }
+    },
+    "A9": {
+      "NON_JSON": {
+        "NON_JSON": 13
+      },
+      "STRICT_JSON": {
+        "STRICT_JSON": 13
+      }
+    }
+  }
+}

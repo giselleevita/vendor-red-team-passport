@@ -3,7 +3,7 @@ from __future__ import annotations
 import datetime as dt
 import json
 import uuid
-from contextlib import nullcontext
+from contextlib import ExitStack
 from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
@@ -14,10 +14,10 @@ from apps.api.services.compliance_mapper import map_compliance
 from apps.api.services.coverage import build_coverage_report
 from apps.api.services.evaluator import evaluate_case, load_case_suite
 from apps.api.services.evidence import sha256_text
-from apps.api.services.featherless_client import FeatherlessClient
 from apps.api.services.judge import SemanticJudge
 from apps.api.services.manifest import build_and_save_manifest
 from apps.api.services.policy import current_policy
+from apps.api.services.providers import create_provider
 from apps.api.services.run_store import (
     load_run_meta,
     save_case_evidence,
@@ -67,8 +67,13 @@ def run_orchestrated(
     suite_path = Path(suite_path)
     suite = load_case_suite(suite_path)
 
-    judge_context = SemanticJudge(target_model=model) if settings.judge_enabled else nullcontext(None)
-    with FeatherlessClient() as client, judge_context as judge:
+    with ExitStack() as stack:
+        client = stack.enter_context(create_provider(profile))
+        judge = (
+            stack.enter_context(SemanticJudge(target_model=model, target_base_url=client.base_url))
+            if settings.judge_enabled
+            else None
+        )
         if a9_mode == "auto":
             strict_supported = client.supports_a9_risk_verdict_schema(model=model)
             a9_mode_used = "strict" if strict_supported else "compat"
@@ -89,10 +94,10 @@ def run_orchestrated(
             "run_id": run_id,
             "created_at_utc": created_at,
             "finished_at_utc": None,
-            "provider": "featherless",
+            "provider": client.provider_name,
             "model": model,
             "tenant_id": tenant_id,
-            "endpoint": "/v1/chat/completions",
+            "endpoint": f"{client.base_url}/chat/completions",
             "params": params,
             "suite_version": suite.suite_version,
             "enabled_case_count": len(enabled_cases),
@@ -106,6 +111,7 @@ def run_orchestrated(
                 "enabled": bool(judge),
                 "model": judge.model if judge else None,
                 "invocation_policy": "ambiguous_only",
+                "data_retention": judge.data_retention if judge else "not_applicable",
                 "raw_response_persisted": False,
             },
         }
@@ -147,6 +153,16 @@ def run_orchestrated(
             save_case_evidence(run_id, case.id, evidence)
 
         scores = compute_scores(enabled_cases, results)
+        judge_metadata = judge.telemetry() if judge else {
+            "provider": None,
+            "model": None,
+            "calls": 0,
+            "attempts": 0,
+            "latency_ms": 0,
+            "estimated_cost_usd": 0.0,
+            "data_retention": "not_applicable",
+            "raw_response_persisted": False,
+        }
         compliance = map_compliance(scores["failed_cases"])
         policy = current_policy()
         coverage = build_coverage_report(evaluated_classes=sorted(set([c.attack_class for c in enabled_cases])))
@@ -167,8 +183,8 @@ def run_orchestrated(
                 "review_required_count": scores["review_required_count"],
                 "judge": {
                     "enabled": bool(judge),
-                    "model": judge.model if judge else None,
                     "invocation_policy": "ambiguous_only",
+                    **judge_metadata,
                 },
             },
             class_scores=scores["class_scores"],
@@ -190,6 +206,11 @@ def run_orchestrated(
         # Update run meta with finish timestamp.
         finished = _utc_now_iso()
         run_meta["finished_at_utc"] = finished
+        run_meta["judge"] = {
+            "enabled": bool(judge),
+            "invocation_policy": "ambiguous_only",
+            **judge_metadata,
+        }
         save_run_meta(run_id, run_meta)
 
         html = render_passport_html(run_id, passport)

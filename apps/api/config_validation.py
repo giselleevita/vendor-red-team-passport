@@ -124,8 +124,29 @@ def validate_judge_config() -> None:
     local_host = parsed.hostname in {"localhost", "127.0.0.1", "::1"}
     if parsed.scheme != "https" and not (parsed.scheme == "http" and local_host):
         raise RuntimeError("JUDGE_BASE_URL must use HTTPS, except for an explicit localhost development URL.")
+    if parsed.username or parsed.password or parsed.query or parsed.fragment:
+        raise RuntimeError("JUDGE_BASE_URL cannot contain credentials, query parameters, or a fragment.")
     if not 0.5 <= settings.judge_confidence_threshold <= 1.0:
         raise RuntimeError("JUDGE_CONFIDENCE_THRESHOLD must be between 0.5 and 1.0.")
+    if settings.judge_provider != "openai-compatible":
+        raise RuntimeError("JUDGE_PROVIDER must be openai-compatible.")
+    if settings.judge_data_retention != "ephemeral":
+        raise RuntimeError("JUDGE_DATA_RETENTION must be ephemeral; judge payload persistence is unsupported.")
+    if not 0 <= settings.judge_max_retries <= 3:
+        raise RuntimeError("JUDGE_MAX_RETRIES must be between 0 and 3.")
+    if settings.judge_retry_backoff_seconds < 0:
+        raise RuntimeError("JUDGE_RETRY_BACKOFF_SECONDS cannot be negative.")
+    if settings.judge_input_cost_per_million_tokens_usd < 0 or settings.judge_output_cost_per_million_tokens_usd < 0:
+        raise RuntimeError("Judge token cost rates cannot be negative.")
+
+
+def validate_request_controls() -> None:
+    settings = get_settings()
+    if not 1024 <= settings.request_max_body_bytes <= 100 * 1024 * 1024:
+        raise RuntimeError("REQUEST_MAX_BODY_BYTES must be between 1 KiB and 100 MiB.")
+    scheme = urlparse(settings.rate_limit_storage_uri).scheme
+    if scheme not in {"memory", "redis", "rediss"}:
+        raise RuntimeError("RATE_LIMIT_STORAGE_URI must use memory://, redis://, or rediss://.")
 
 
 def validate_all() -> None:
@@ -138,3 +159,4 @@ def validate_all() -> None:
     validate_auth_secrets()
     validate_job_store_config()
     validate_judge_config()
+    validate_request_controls()

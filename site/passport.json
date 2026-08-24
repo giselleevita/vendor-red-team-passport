@@ -112,7 +112,7 @@
     "raw_responses_persisted": false,
     "sanitized_excerpts_only": true,
     "manifest_hashing": "SHA-256",
-    "audit_hmac_limitation": "Detects modification of signed entries, not deletion or reordering."
+    "audit_integrity": "audit.v2 detects mutation, insertion, deletion, reordering, and truncation when the signed checkpoint and HMAC key are independently protected."
   },
   "standards": {
     "owasp": "OWASP Top 10 for LLM Applications 2025",

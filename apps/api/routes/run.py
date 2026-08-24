@@ -17,7 +17,7 @@ from apps.api.services.jobs import create_job, load_job, update_job
 from apps.api.services.profiles import load_profile
 
 router = APIRouter()
-limiter = Limiter(key_func=get_remote_address)
+limiter = Limiter(key_func=get_remote_address, storage_uri=get_settings().rate_limit_storage_uri)
 
 
 def _utc_now_iso() -> str:
