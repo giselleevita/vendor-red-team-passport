@@ -8,7 +8,6 @@ from pathlib import Path
 
 from apps.api.services.run_store import runs_dir
 
-
 REDACT_SECRET = re.compile(
     r"(?i)(api[_-]?key|jwt[_-]?secret|password|ssh|-----begin|token=|bearer\\s+)",
 )

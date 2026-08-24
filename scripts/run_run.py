@@ -3,9 +3,9 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import json
-from pathlib import Path
 import re
 import sys
+from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:

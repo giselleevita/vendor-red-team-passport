@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 import datetime as dt
-from functools import lru_cache
 import json
-from pathlib import Path
 import sqlite3
+from functools import lru_cache
+from pathlib import Path
 from threading import Lock
 
 from apps.api.config import get_settings
@@ -66,7 +66,7 @@ class FileJobStore:
         for p in sorted(jobs_dir().glob("*.json")):
             try:
                 item = json.loads(p.read_text(encoding="utf-8"))
-            except Exception:  # noqa: BLE001
+            except Exception:  # noqa: BLE001, S112 -- ignore corrupt job records during listing
                 continue
             if not isinstance(item, dict):
                 continue

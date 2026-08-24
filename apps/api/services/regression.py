@@ -87,7 +87,7 @@ def regression_gate(
             if c_overall + 1e-9 < b_overall:
                 any_regressed = True
                 reasons.append(f"overall_score decreased: {b_overall} -> {c_overall}")
-        except Exception:  # noqa: BLE001
+        except Exception:  # noqa: BLE001, S110 -- non-numeric legacy scores are ignored
             pass
 
     if fail_on == "critical":
@@ -124,4 +124,3 @@ def regression_gate(
     }
 
     return GateDecision(ok=ok, reasons=reasons, report=report)
-

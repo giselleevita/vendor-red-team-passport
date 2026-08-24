@@ -8,21 +8,26 @@ on:
 
 jobs:
   test:
-    name: Lint & Test
+    name: Lint & Test (Python ${{ matrix.python-version }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12"]
     steps:
       - uses: actions/checkout@v6
 
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
-          python-version: "3.11"
+          python-version: ${{ matrix.python-version }}
           cache: "pip"
 
       - name: Install dependencies
         run: |
-          pip install -U pip
-          pip install -e ".[dev]"
+          python -m pip install --upgrade pip
+          pip install -r requirements.lock
+          pip install -e . --no-deps
 
       - name: Ruff lint
         run: ruff check .
@@ -30,9 +35,22 @@ jobs:
       - name: Run unit tests
         env:
           AUTH_JWT_HS256_SECRET: ci-secret-key-32chars-padded-here
+          AUTH_JWT_ISSUER: vendor-rtp-ci
+          AUTH_JWT_AUDIENCE: vendor-rtp-api
           FEATHERLESS_API_KEY: skip
           VENDOR_RTP_REPORTS_DIR: /tmp/vrtp_reports_ci
-        run: pytest tests/ -v --tb=short --ignore=tests/e2e
+        run: pytest tests/ -v --tb=short --ignore=tests/e2e --cov=apps/api --cov-report=term-missing --cov-report=xml --cov-fail-under=75
+
+      - name: Dependency audit
+        if: matrix.python-version == '3.11'
+        run: pip-audit -r requirements.lock
+
+      - name: Upload coverage artifact
+        if: matrix.python-version == '3.11'
+        uses: actions/upload-artifact@v6
+        with:
+          name: coverage-report
+          path: coverage.xml
 
   docker:
     name: Docker Build Check

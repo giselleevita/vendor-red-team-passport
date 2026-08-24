@@ -4,7 +4,6 @@ import json
 import logging
 from threading import Lock
 
-
 _log = logging.getLogger("vendor_rtp.http")
 
 

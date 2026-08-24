@@ -105,6 +105,6 @@ def list_profiles() -> list[dict]:
                     "source_path": data.get("source_path", str(path)),
                 }
             )
-        except Exception:
+        except Exception:  # noqa: BLE001, S112 -- invalid profile files are omitted from the listing
             continue
     return items
