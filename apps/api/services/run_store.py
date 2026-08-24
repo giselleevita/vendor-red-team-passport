@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import json
 import os
-from pathlib import Path
 import re
+from pathlib import Path
 
 from apps.api.config import get_settings
 from apps.api.schemas.passport import Passport

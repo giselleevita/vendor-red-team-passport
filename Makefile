@@ -1,4 +1,4 @@
-.PHONY: setup test run worker quick-gates full-suite high-sensitivity regression verify-manifest lint
+.PHONY: setup test run worker quick-gates full-suite high-sensitivity regression verify-manifest lint reviewer-demo
 
 setup:
 	python -m venv .venv
@@ -6,6 +6,15 @@ setup:
 
 test:
 	. .venv/bin/activate && pytest -q
+
+lint:
+	. .venv/bin/activate && ruff check .
+
+reviewer-demo:
+	test -d .venv || python -m venv .venv
+	. .venv/bin/activate && pip install -q -r requirements.lock && pip install -q -e . --no-deps
+	. .venv/bin/activate && AUTH_JWT_HS256_SECRET=reviewer-demo-secret-32-characters AUTH_JWT_ISSUER=vendor-rtp-local AUTH_JWT_AUDIENCE=vendor-rtp-api FEATHERLESS_API_KEY=skip pytest -q --ignore=tests/e2e --cov=apps/api --cov-fail-under=75
+	@echo "Verified. Open site/index.html or run: python -m http.server 8080 -d site"
 
 run:
 	. .venv/bin/activate && uvicorn apps.api.main:app --reload --port 8000
