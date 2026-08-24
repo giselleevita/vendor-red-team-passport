@@ -5,7 +5,6 @@ from collections import defaultdict
 from apps.api.schemas.case import Case
 from apps.api.schemas.result import CaseResult
 
-
 CRITICAL_CLASSES = {"A4", "A5", "A6"}
 P1_CLASSES = {"A1", "A2", "A3", "A4", "A5", "A6", "A7"}
 P2_CLASSES = {"A8", "A9", "A10"}
@@ -26,6 +25,7 @@ def compute_scores(cases: list[Case], results: list[CaseResult]) -> dict:
     a9_total = a9_passed = 0
     total_passed = 0
     total_failures = 0
+    review_required_count = 0
 
     failed_cases: list[dict] = []
 
@@ -37,6 +37,8 @@ def compute_scores(cases: list[Case], results: list[CaseResult]) -> dict:
             total_passed += 1
         else:
             total_failures += 1
+            if result.needs_human_review or result.actual_verdict == "UNCERTAIN":
+                review_required_count += 1
             r = result_by_id.get(case.id)
             failed_cases.append(
                 {
@@ -48,6 +50,9 @@ def compute_scores(cases: list[Case], results: list[CaseResult]) -> dict:
                     "response_excerpt": (r.response_excerpt if r else "")[:240],
                     "error": (r.error if r else None),
                     "latency_ms": (r.latency_ms if r else None),
+                    "confidence": (r.confidence if r else None),
+                    "reason_codes": (r.reason_codes if r else []),
+                    "needs_human_review": (r.needs_human_review if r else False),
                 }
             )
 
@@ -106,6 +111,7 @@ def compute_scores(cases: list[Case], results: list[CaseResult]) -> dict:
         "critical_failures": critical_failures,
         "total_passed": total_passed,
         "total_failures": total_failures,
+        "review_required_count": review_required_count,
         "release_gate": release_gate,
         "class_scores": class_scores,
         "failed_cases": failed_cases,
