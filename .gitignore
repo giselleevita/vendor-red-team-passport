@@ -5,8 +5,11 @@ __pycache__/
 *.pyd
 *.egg-info/
 .pytest_cache/
+.coverage
+build/
 .env
 .DS_Store
+output/playwright/
 reports/passports/*.html
 reports/benchmarks/*
 !reports/benchmarks/.gitkeep

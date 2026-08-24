@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import time
 import uuid
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
@@ -14,17 +15,26 @@ from apps.api.routes.health import router as health_router
 from apps.api.routes.metrics import router as metrics_router
 from apps.api.routes.passport import router as passport_router
 from apps.api.routes.profiles import router as profiles_router
-from apps.api.routes.run import limiter, router as run_router
+from apps.api.routes.run import limiter
+from apps.api.routes.run import router as run_router
 from apps.api.routes.ui import router as ui_router
 from apps.api.services.errors import error_body
 from apps.api.services.observability import log_request_event, record_request_metric
 
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    validate_all()
+    yield
+
+
 app = FastAPI(
     title="AI Vendor Red-Team Passport API",
-    version="0.1.0",
+    version="0.2.0",
     docs_url=None,
     redoc_url=None,
     openapi_url=None,
+    lifespan=lifespan,
 )
 app.state.limiter = limiter
 
@@ -120,6 +130,14 @@ async def request_context_middleware(request: Request, call_next):
         actor=actor,
     )
     response.headers["X-Correlation-ID"] = cid
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Referrer-Policy"] = "no-referrer"
+    response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
+    response.headers["Content-Security-Policy"] = (
+        "default-src 'self'; style-src 'self' 'unsafe-inline'; "
+        "img-src 'self' data:; frame-ancestors 'none'; base-uri 'none'; form-action 'self'"
+    )
     return response
 
 
@@ -186,7 +204,3 @@ async def handle_unexpected_error(request: Request, exc: Exception):  # noqa: AR
     response.headers["X-Correlation-ID"] = cid
     return response
 
-
-@app.on_event("startup")
-async def validate_startup_configuration() -> None:
-    validate_all()

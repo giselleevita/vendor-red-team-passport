@@ -8,6 +8,8 @@ insecure configurations (e.g., empty JWT secrets).
 
 from __future__ import annotations
 
+from urllib.parse import urlparse
+
 from apps.api.config import get_settings
 
 
@@ -42,6 +44,10 @@ def validate_auth_secrets() -> None:
             "Generate with:\n"
             "  python -c 'import secrets; print(secrets.token_urlsafe(32))'"
         )
+    if not settings.auth_jwt_issuer.strip():
+        errors.append("AUTH_JWT_ISSUER is required when authentication is enabled.")
+    if not settings.auth_jwt_audience.strip():
+        errors.append("AUTH_JWT_AUDIENCE is required when authentication is enabled.")
 
     if errors:
         raise RuntimeError(
@@ -89,15 +95,37 @@ def validate_job_store_config() -> None:
 
     backend = (settings.job_store_backend or "file").strip().lower()
 
-    if backend == "sql":
-        if not (settings.job_store_dsn or "").strip():
-            raise RuntimeError(
+    if backend == "sql" and not (settings.job_store_dsn or "").strip():
+        raise RuntimeError(
                 "❌ FATAL: JOB_STORE_BACKEND=sql but JOB_STORE_DSN is empty.\n\n"
                 "Set JOB_STORE_DSN in your .env file. Examples:\n"
                 "  sqlite:///./jobs.db\n"
                 "  postgresql://user:password@localhost:5432/vendor_rtp\n\n"
                 "You must also have a PostgreSQL/SQLite database running."
-            )
+        )
+
+
+def validate_judge_config() -> None:
+    settings = get_settings()
+    if not settings.judge_enabled:
+        return
+    missing = [
+        name
+        for name, value in {
+            "JUDGE_BASE_URL": settings.judge_base_url,
+            "JUDGE_API_KEY": settings.judge_api_key,
+            "JUDGE_MODEL": settings.judge_model,
+        }.items()
+        if not value.strip()
+    ]
+    if missing:
+        raise RuntimeError(f"Judge enabled but required settings are missing: {', '.join(missing)}")
+    parsed = urlparse(settings.judge_base_url)
+    local_host = parsed.hostname in {"localhost", "127.0.0.1", "::1"}
+    if parsed.scheme != "https" and not (parsed.scheme == "http" and local_host):
+        raise RuntimeError("JUDGE_BASE_URL must use HTTPS, except for an explicit localhost development URL.")
+    if not 0.5 <= settings.judge_confidence_threshold <= 1.0:
+        raise RuntimeError("JUDGE_CONFIDENCE_THRESHOLD must be between 0.5 and 1.0.")
 
 
 def validate_all() -> None:
@@ -109,3 +137,4 @@ def validate_all() -> None:
     """
     validate_auth_secrets()
     validate_job_store_config()
+    validate_judge_config()

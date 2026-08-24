@@ -5,10 +5,9 @@ from datetime import datetime, timezone
 from typing import Literal
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request
+from pydantic import BaseModel, Field
 from slowapi import Limiter
 from slowapi.util import get_remote_address
-
-from pydantic import BaseModel, Field
 
 from apps.api.config import get_settings
 from apps.api.services.audit import log_audit_event

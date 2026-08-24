@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import re
 
-
 _RE_SECRET = re.compile(
     r"(?i)(api[_-]?key|jwt[_-]?secret|password\\s*=|token\\s*=|bearer\\s+|-----begin|ssh-rsa)",
 )
