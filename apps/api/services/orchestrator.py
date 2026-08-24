@@ -3,17 +3,19 @@ from __future__ import annotations
 import datetime as dt
 import json
 import uuid
+from contextlib import nullcontext
 from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
-from apps.api.schemas.passport import Passport
 from apps.api.config import get_settings
+from apps.api.schemas.passport import Passport
 from apps.api.services.compliance_mapper import map_compliance
 from apps.api.services.coverage import build_coverage_report
 from apps.api.services.evaluator import evaluate_case, load_case_suite
 from apps.api.services.evidence import sha256_text
 from apps.api.services.featherless_client import FeatherlessClient
+from apps.api.services.judge import SemanticJudge
 from apps.api.services.manifest import build_and_save_manifest
 from apps.api.services.policy import current_policy
 from apps.api.services.run_store import (
@@ -25,6 +27,7 @@ from apps.api.services.run_store import (
     save_run_meta,
 )
 from apps.api.services.scoring import compute_scores
+from apps.api.services.taxonomy import EVALUATION_POLICY_VERSION, TAXONOMY_VERSION
 
 
 def _utc_now_iso() -> str:
@@ -64,7 +67,8 @@ def run_orchestrated(
     suite_path = Path(suite_path)
     suite = load_case_suite(suite_path)
 
-    with FeatherlessClient() as client:
+    judge_context = SemanticJudge(target_model=model) if settings.judge_enabled else nullcontext(None)
+    with FeatherlessClient() as client, judge_context as judge:
         if a9_mode == "auto":
             strict_supported = client.supports_a9_risk_verdict_schema(model=model)
             a9_mode_used = "strict" if strict_supported else "compat"
@@ -96,6 +100,14 @@ def run_orchestrated(
             "a9_mode_used": a9_mode_used,
             "a9_strict_supported": bool(strict_supported),
             "notes": "sanitized-only evidence",
+            "taxonomy_version": TAXONOMY_VERSION,
+            "evaluation_policy_version": EVALUATION_POLICY_VERSION,
+            "judge": {
+                "enabled": bool(judge),
+                "model": judge.model if judge else None,
+                "invocation_policy": "ambiguous_only",
+                "raw_response_persisted": False,
+            },
         }
         if profile:
             run_meta["profile"] = {
@@ -107,7 +119,7 @@ def run_orchestrated(
 
         results = []
         for case in enabled_cases:
-            r = evaluate_case(case, client, a9_mode=a9_mode_used, params=params)
+            r = evaluate_case(case, client, a9_mode=a9_mode_used, params=params, judge=judge)
             results.append(r)
 
             evidence = {
@@ -119,6 +131,14 @@ def run_orchestrated(
                 "response_excerpt_sanitized": r.response_excerpt,
                 "error": r.error,
                 "timing": {"latency_ms": r.latency_ms},
+                "evaluator": {
+                    "version": r.evaluator_version,
+                    "decision_source": r.decision_source,
+                    "confidence": r.confidence,
+                    "reason_codes": r.reason_codes,
+                    "judge_model": r.judge_model,
+                    "needs_human_review": r.needs_human_review,
+                },
                 "hashes": {
                     "prompt_sha256": sha256_text(case.prompt),
                     "response_excerpt_sha256": sha256_text(r.response_excerpt),
@@ -142,6 +162,14 @@ def run_orchestrated(
                 "a9_strict_supported": bool(strict_supported),
                 "critical_failures": scores["critical_failures"],
                 "release_gate": scores["release_gate"],
+                "taxonomy_version": TAXONOMY_VERSION,
+                "evaluation_policy_version": EVALUATION_POLICY_VERSION,
+                "review_required_count": scores["review_required_count"],
+                "judge": {
+                    "enabled": bool(judge),
+                    "model": judge.model if judge else None,
+                    "invocation_policy": "ambiguous_only",
+                },
             },
             class_scores=scores["class_scores"],
             failed_cases=scores["failed_cases"],

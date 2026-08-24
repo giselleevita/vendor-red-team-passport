@@ -1,16 +1,22 @@
 {
-  "generated_at": "2026-06-02",
-  "version": "1.0.0",
+  "version": "coverage.v2",
+  "taxonomy_version": "taxonomy.v2-owasp-2025",
+  "standards": {
+    "owasp": "OWASP Top 10 for LLM Applications 2025",
+    "nist_ai_rmf": "NIST AI RMF 1.0 (AI 100-1)"
+  },
   "crosswalk": [
-    {"class": "A1", "owasp_llm": "LLM01", "title": "Prompt Injection",                  "nist": "SI-10",  "test_file": "tests/api/test_attack_classes.py::TestA1PromptInjection"},
-    {"class": "A2", "owasp_llm": "LLM02", "title": "Insecure Output Handling",           "nist": "SI-15",  "test_file": "tests/api/test_attack_classes.py::TestA2InsecureOutput"},
-    {"class": "A3", "owasp_llm": "LLM06", "title": "Sensitive Information Disclosure",    "nist": "SC-28",  "test_file": "tests/api/test_attack_classes.py::TestA3SensitiveDisclosure"},
-    {"class": "A4", "owasp_llm": "LLM04", "title": "Model Denial of Service",             "nist": "SC-5",   "test_file": "tests/api/test_attack_classes.py::TestA4DenialOfService"},
-    {"class": "A5", "owasp_llm": "LLM03", "title": "Training Data Poisoning",             "nist": "SI-3",   "test_file": "tests/api/test_attack_classes.py::TestA5TrainingDataPoisoning"},
-    {"class": "A6", "owasp_llm": "LLM07", "title": "Insecure Plugin Design",              "nist": "CM-7",   "test_file": "tests/api/test_attack_classes.py::TestA6InsecurePlugin"},
-    {"class": "A7", "owasp_llm": "LLM08", "title": "Excessive Agency",                   "nist": "AC-6",   "test_file": "tests/api/test_attack_classes.py::TestA7ExcessiveAgency"},
-    {"class": "A8", "owasp_llm": "LLM09", "title": "Overreliance",                       "nist": "RA-3",   "test_file": "tests/api/test_attack_classes.py::TestA8Overreliance"},
-    {"class": "A9", "owasp_llm": "LLM10", "title": "Output Schema Compliance",           "nist": "SI-7",   "test_file": "tests/api/test_attack_classes.py::TestA9OutputSchemaCompliance"},
-    {"class": "A10","owasp_llm": "LLM05", "title": "Supply Chain Vulnerabilities",        "nist": "SA-12",  "test_file": "tests/api/test_attack_classes.py::TestA10SupplyChain"}
-  ]
+    {"class": "A1", "title": "Direct prompt injection", "owasp": ["LLM01:2025"], "relationship": "direct", "nist_ai_rmf": ["MEASURE", "MANAGE"]},
+    {"class": "A2", "title": "Jailbreak and role-play", "owasp": ["LLM01:2025"], "relationship": "direct", "nist_ai_rmf": ["MEASURE", "MANAGE"]},
+    {"class": "A3", "title": "Obfuscated prompt injection", "owasp": ["LLM01:2025"], "relationship": "direct", "nist_ai_rmf": ["MEASURE", "MANAGE"]},
+    {"class": "A4", "title": "System prompt leakage", "owasp": ["LLM07:2025"], "relationship": "direct", "nist_ai_rmf": ["MEASURE", "MANAGE"]},
+    {"class": "A5", "title": "Secret exfiltration", "owasp": ["LLM02:2025"], "relationship": "direct", "nist_ai_rmf": ["MEASURE", "MANAGE"]},
+    {"class": "A6", "title": "Cross-session disclosure", "owasp": ["LLM02:2025"], "relationship": "direct", "nist_ai_rmf": ["MEASURE", "MANAGE"]},
+    {"class": "A7", "title": "Malware enablement", "owasp": [], "relationship": "policy-safety", "nist_ai_rmf": ["MEASURE", "MANAGE"]},
+    {"class": "A8", "title": "Unsafe transformation and social engineering", "owasp": [], "relationship": "policy-safety", "nist_ai_rmf": ["MEASURE", "MANAGE"]},
+    {"class": "A9", "title": "Structured output reliability", "owasp": ["LLM05:2025"], "relationship": "related", "nist_ai_rmf": ["MEASURE", "MANAGE"]},
+    {"class": "A10", "title": "Token and resource abuse", "owasp": ["LLM10:2025"], "relationship": "direct", "nist_ai_rmf": ["MEASURE", "MANAGE"]}
+  ],
+  "suite_process_functions": ["GOVERN", "MAP"],
+  "disclaimer": "Versioned communication aid only; not certification or complete framework coverage."
 }

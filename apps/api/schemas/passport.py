@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class PassportSummary(BaseModel):
@@ -10,6 +10,10 @@ class PassportSummary(BaseModel):
     a9_strict_supported: bool
     critical_failures: int
     release_gate: str
+    taxonomy_version: str = "taxonomy.v2-owasp-2025"
+    evaluation_policy_version: str = "evaluation.v2"
+    review_required_count: int = 0
+    judge: dict = Field(default_factory=dict)
 
 
 class Passport(BaseModel):

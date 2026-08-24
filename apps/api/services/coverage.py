@@ -2,77 +2,67 @@ from __future__ import annotations
 
 from collections import defaultdict
 
-
-OWASP_LLM_TOP10 = {
-    # OWASP Top 10 for LLM Applications (names are informative references).
-    "LLM01": "Prompt Injection",
-    "LLM02": "Insecure Output Handling",
-    "LLM03": "Training Data Poisoning",
-    "LLM04": "Model Denial of Service",
-    "LLM05": "Supply Chain Vulnerabilities",
-    "LLM06": "Sensitive Information Disclosure",
-    "LLM07": "Insecure Plugin Design",
-    "LLM08": "Excessive Agency",
-    "LLM09": "Overreliance",
-    "LLM10": "Model Theft",
-}
-
-NIST_AI_RMF_FUNCTIONS = ["GOVERN", "MAP", "MEASURE", "MANAGE"]
+from apps.api.services.taxonomy import OWASP_GENAI_2025, TAXONOMY_VERSION, class_taxonomy
 
 
 def class_to_controls() -> dict[str, dict]:
-    """
-    Heuristic crosswalk for reporting.
-    This is not certification; it helps stakeholders reason about coverage.
-    """
-    return {
-        "A1": {"owasp": ["LLM01"], "nist_ai_rmf": ["MAP", "MANAGE"], "label": "Prompt injection (direct)"},
-        "A2": {"owasp": ["LLM02", "LLM09"], "nist_ai_rmf": ["MEASURE", "MANAGE"], "label": "Unsafe output handling"},
-        "A3": {"owasp": ["LLM01"], "nist_ai_rmf": ["MAP", "MANAGE"], "label": "Prompt injection (obfuscated)"},
-        "A4": {"owasp": ["LLM06"], "nist_ai_rmf": ["MEASURE", "MANAGE"], "label": "System prompt leakage"},
-        "A5": {"owasp": ["LLM06"], "nist_ai_rmf": ["MEASURE", "MANAGE"], "label": "Secret exfiltration"},
-        "A6": {"owasp": ["LLM06"], "nist_ai_rmf": ["GOVERN", "MANAGE"], "label": "Isolation / cross-session recall"},
-        "A7": {"owasp": ["LLM02"], "nist_ai_rmf": ["MEASURE", "MANAGE"], "label": "Malware content generation"},
-        "A8": {"owasp": ["LLM02"], "nist_ai_rmf": ["MEASURE", "MANAGE"], "label": "Social engineering / phishing"},
-        "A9": {"owasp": ["LLM02"], "nist_ai_rmf": ["MEASURE", "MANAGE"], "label": "Structured output reliability"},
-        "A10": {"owasp": ["LLM04"], "nist_ai_rmf": ["MAP", "MANAGE"], "label": "Model DoS / resource abuse"},
-    }
+    return class_taxonomy()
 
 
 def build_coverage_report(*, evaluated_classes: list[str]) -> dict:
-    mapping = class_to_controls()
-    evaluated = [c for c in evaluated_classes if c]
-
-    owasp_counts = defaultdict(int)
-    nist_counts = defaultdict(int)
-
+    mapping = class_taxonomy()
+    evaluated = sorted({value for value in evaluated_classes if value})
+    owasp_counts: dict[str, int] = defaultdict(int)
+    nist_counts: dict[str, int] = defaultdict(int)
     rows = []
-    for cls in sorted(set(evaluated)):
-        m = mapping.get(cls, {"owasp": [], "nist_ai_rmf": [], "label": ""})
-        for o in m.get("owasp", []):
-            owasp_counts[o] += 1
-        for n in m.get("nist_ai_rmf", []):
-            nist_counts[n] += 1
+    for attack_class in evaluated:
+        item = mapping.get(attack_class, {})
+        owasp = list(item.get("owasp", []))
+        nist = list(item.get("nist_ai_rmf", []))
+        for identifier in owasp:
+            owasp_counts[identifier] += 1
+        for function in nist:
+            nist_counts[function] += 1
         rows.append(
             {
-                "attack_class": cls,
-                "label": m.get("label", ""),
-                "owasp": [{"id": o, "name": OWASP_LLM_TOP10.get(o, "")} for o in m.get("owasp", [])],
-                "nist_ai_rmf": m.get("nist_ai_rmf", []),
+                "attack_class": attack_class,
+                "label": item.get("label", ""),
+                "relationship": item.get("relationship", "unmapped"),
+                "rationale": item.get("rationale", ""),
+                "owasp": [
+                    {"id": identifier, "name": OWASP_GENAI_2025.get(identifier, "")}
+                    for identifier in owasp
+                ],
+                "nist_ai_rmf": nist,
             }
         )
-
     return {
-        "version": "coverage.v1",
+        "version": "coverage.v2",
+        "taxonomy_version": TAXONOMY_VERSION,
+        "standards": {
+            "owasp": "OWASP Top 10 for LLM Applications 2025",
+            "nist_ai_rmf": "NIST AI RMF 1.0 (AI 100-1)",
+        },
         "evaluated_classes": evaluated,
         "by_attack_class": rows,
         "summary": {
-            "owasp_llm_top10": [{"id": k, "name": OWASP_LLM_TOP10.get(k, ""), "covered_by_classes": int(v)} for k, v in sorted(owasp_counts.items())],
-            "nist_ai_rmf": [{"function": k, "covered_by_classes": int(v)} for k, v in sorted(nist_counts.items())],
+            "owasp_genai_2025": [
+                {
+                    "id": key,
+                    "name": OWASP_GENAI_2025.get(key, ""),
+                    "covered_by_classes": count,
+                }
+                for key, count in sorted(owasp_counts.items())
+            ],
+            "nist_ai_rmf": [
+                {"function": key, "covered_by_classes": count}
+                for key, count in sorted(nist_counts.items())
+            ],
+            "suite_process_functions": ["GOVERN", "MAP"],
         },
         "notes": [
-            "Control mappings are heuristic crosswalks for communication, not compliance certification.",
-            "Coverage depends on which classes were executed (e.g. quick_gates vs full_suite).",
+            "Mappings are versioned communication aids, not certification or complete framework coverage.",
+            "A7 and A8 are policy-safety tests and intentionally make no direct OWASP coverage claim.",
+            "NIST SP 800-53 control identifiers are outside this function-level AI RMF crosswalk.",
         ],
     }
-
