@@ -30,9 +30,9 @@ Primary assets are provider credentials, tenant-scoped artifacts, evaluation int
 
 ## Known residual risks
 
-- Text rules and semantic judges can both be wrong; v0.2 calibration is a bounded regression corpus, not proof of universal accuracy.
+- Text rules and semantic judges can both be wrong; v0.3 calibration is a bounded synthetic regression corpus, not proof of universal accuracy.
 - The judge receives raw target prompt/response data ephemerally; its provider retention policy must be reviewed separately.
-- Per-entry audit HMACs cannot detect deleted or reordered entries in v0.2.
+- Audit-chain completeness depends on preserving the signed checkpoint separately from the append-only log.
 - `Content-Length` request limits do not cover every streaming/chunked deployment path; enforce edge limits until v0.3 streaming middleware lands.
 - File/in-memory stores and rate limiting are not multi-instance production controls.
 - Framework crosswalks can be misread as attestation; every report carries a non-certification disclaimer.

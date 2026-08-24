@@ -33,7 +33,7 @@ This repository is a **research and evaluation tool** for adversarial testing of
 - Report, case, artifact, and job access is checked against the authenticated tenant.
 - Raw prompts and model responses are not persisted; sanitized excerpts and hashes are stored.
 - The optional semantic judge is disabled by default. When enabled, ambiguous prompts and responses are transmitted ephemerally to a separately configured provider.
-- Individual audit-entry HMACs detect modification of signed entries. The v0.2 format does not detect deletion or reordering.
+- `audit.v2` chains ordered events and signs a tail checkpoint, detecting modification, insertion, deletion, reordering, and truncation when both files are verified.
 - The static public demo is synthetic and contains no live API, credentials, or real vendor output.
 
 ## Responsible Disclosure

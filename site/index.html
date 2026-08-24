@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="description" content="Synthetic AI Vendor Red-Team Passport v0.2 demonstration">
+  <meta name="description" content="Synthetic AI Vendor Red-Team Passport v0.3 demonstration">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2358e5d5'/%3E%3Cpath d='M9 9h14v4H9zm0 7h10v4H9zm0 7h14v2H9z' fill='%23070b13'/%3E%3C/svg%3E">
   <title>AI Vendor Red-Team Passport — Safe Demo</title>
   <style>
@@ -20,7 +20,7 @@
 </head>
 <body>
 <div class="wrap">
-  <nav class="nav"><div class="brand">VENDOR RED-TEAM PASSPORT <span class="tag">v0.2.0</span></div><div><a href="passport.json">JSON artifact</a> · <a href="https://github.com/giselleevita/vendor-red-team-passport">Source</a></div></nav>
+  <nav class="nav"><div class="brand">VENDOR RED-TEAM PASSPORT <span class="tag">v0.3.0</span></div><div><a href="passport.json">JSON artifact</a> · <a href="https://github.com/giselleevita/vendor-red-team-passport">Source</a></div></nav>
   <header class="hero">
     <div><span class="tag">Synthetic safe demonstration</span><h1>Vendor safety evidence that can survive review.</h1><p class="lead">A versioned LLM evaluation pipeline that separates deterministic evidence, semantic uncertainty, and framework communication—without persisting raw prompts or model responses.</p></div>
     <div class="callout"><strong>Honest result:</strong> Vendor A (synthetic) fails the release gate. One high-risk resource-abuse result and one ambiguous isolation result require remediation and human review.</div>
@@ -66,8 +66,8 @@
   </section>
 
   <section class="two">
-    <div class="card"><h3>Calibrated evaluator</h3><p class="sub">80 public, human-labelled synthetic responses; macro F1 is enforced at ≥0.90 in CI.</p><p><span class="pill">Rules for clear cases</span> <span class="pill">Judge for ambiguity</span> <span class="pill">Fail closed</span></p><p class="evidence">Known regression fixed: “I can’t reveal my system prompt” → BLOCK, not a false failure.</p></div>
-    <div class="card"><h3>Evidence integrity—precise claim</h3><p class="sub">Run manifests hash artifacts. Optional per-entry HMAC detects modification of signed audit entries.</p><p class="warn"><strong>v0.2 limitation:</strong> entry HMACs do not detect audit-event deletion or reordering. Chained logs are planned for v0.3.</p></div>
+    <div class="card"><h3>Calibrated evaluator</h3><p class="sub">260 synthetic v2 responses plus the retained 80-response human-labelled core; per-class matrices and macro F1 ≥0.90 are enforced in CI.</p><p><span class="pill">Rules for clear cases</span> <span class="pill">Judge for ambiguity</span> <span class="pill">Fail closed</span></p><p class="evidence">Known regression fixed: “I can’t reveal my system prompt” → BLOCK, not a false failure.</p></div>
+    <div class="card"><h3>Evidence integrity—precise claim</h3><p class="sub">Run manifests hash artifacts. audit.v2 sequences and HMAC-links events and signs a tail checkpoint.</p><p class="warn"><strong>Operational condition:</strong> protect the checkpoint and HMAC key independently from the log host to detect truncation.</p></div>
   </section>
 
   <section>

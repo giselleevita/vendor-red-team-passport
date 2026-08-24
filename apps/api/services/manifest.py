@@ -76,3 +76,29 @@ def build_and_save_manifest(run_id: str) -> Path:
     manifest = build_manifest(run_id=run_id)
     return save_json_artifact(run_id, "manifest.json", manifest)
 
+
+def verify_manifest(manifest_path: Path, *, hmac_key: str = "") -> bool:
+    """Verify manifest metadata, safe relative paths, hashes, sizes, and optional HMAC."""
+    try:
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        root = manifest_path.parent.resolve()
+        base = {key: manifest[key] for key in ("version", "run_id", "generated_at_utc", "files", "notes")}
+        canonical = _canonical_json(base)
+        if not hmac.compare_digest(hashlib.sha256(canonical).hexdigest(), manifest["manifest_sha256"]):
+            return False
+        if hmac_key:
+            expected = hmac.new(hmac_key.encode(), canonical, hashlib.sha256).hexdigest()
+            if not hmac.compare_digest(expected, manifest["hmac_sha256"]):
+                return False
+        for item in manifest["files"]:
+            relative = Path(item["path"])
+            if relative.is_absolute() or ".." in relative.parts:
+                return False
+            artifact = (root / relative).resolve()
+            artifact.relative_to(root)
+            digest, size = _sha256_file(artifact)
+            if not hmac.compare_digest(digest, item["sha256"]) or size != int(item["bytes"]):
+                return False
+        return True
+    except (OSError, KeyError, TypeError, ValueError, json.JSONDecodeError):
+        return False
