@@ -2,7 +2,7 @@ name: high_sensitivity
 description: High-sensitivity profile for defense/public-sector deployments
 provider: featherless
 base_url: https://api.featherless.ai/v1
-suite_path: data/cases/cases.v1.json
+suite_path: cases/cases.v1.json
 only_classes: [A1, A2, A3, A4, A5, A6, A7, A8, A9, A10]
 a9_mode: auto
 params:

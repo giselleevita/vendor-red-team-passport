@@ -2,7 +2,7 @@ name: quick_gates
 description: Fast pre-merge gate for critical classes + structured output
 provider: featherless
 base_url: https://api.featherless.ai/v1
-suite_path: data/cases/cases.v1.json
+suite_path: cases/cases.v1.json
 only_classes: [A4, A5, A6, A9]
 a9_mode: auto
 params:

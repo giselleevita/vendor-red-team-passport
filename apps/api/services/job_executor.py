@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
 
+from apps.api.assets import DEFAULT_SUITE
 from apps.api.config import get_settings
 from apps.api.services.jobs import load_job, update_job
 from apps.api.services.orchestrator import run_orchestrated
@@ -51,7 +52,7 @@ def execute_job(job_id: str) -> dict:
             params=params,
             tenant_id=str(job.get("tenant_id", "")),
             run_id=str(job.get("run_id", "")),
-            suite_path=str(job.get("suite_path", "data/cases/cases.v1.json")),
+            suite_path=str(job.get("suite_path", DEFAULT_SUITE)),
             profile=profile,
         )
         return update_job(

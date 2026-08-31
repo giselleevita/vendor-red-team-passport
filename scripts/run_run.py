@@ -11,6 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+from apps.api.assets import DEFAULT_SUITE
 from apps.api.config import get_settings
 from apps.api.services.orchestrator import run_orchestrated
 from apps.api.services.profiles import load_profile
@@ -27,7 +28,7 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--profile", default="", help="Profile name/path (e.g. quick_gates, full_suite)")
     ap.add_argument("--model", default="", help="Featherless model name (default: DEFAULT_MODEL from .env)")
-    ap.add_argument("--suite", default="data/cases/cases.v1.json", help="Case suite JSON path")
+    ap.add_argument("--suite", default=DEFAULT_SUITE, help="Case suite path or built-in asset reference")
     ap.add_argument(
         "--only-classes",
         nargs="*",
@@ -42,7 +43,7 @@ def main() -> None:
     profile = load_profile(args.profile) if args.profile else None
 
     model = (args.model or "").strip() or (profile.get("model") if profile else "") or settings.default_model
-    suite_path = (args.suite or "").strip() or (profile.get("suite_path") if profile else "") or "data/cases/cases.v1.json"
+    suite_path = (args.suite or "").strip() or (profile.get("suite_path") if profile else "") or DEFAULT_SUITE
 
     only_classes = None
     if args.only_classes:

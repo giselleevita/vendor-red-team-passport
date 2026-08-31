@@ -6,6 +6,7 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 
+from apps.api.assets import read_text
 from apps.api.schemas.case import Case, CaseSuite
 from apps.api.schemas.result import CaseResult
 from apps.api.services.featherless_client import FeatherlessClient
@@ -93,7 +94,7 @@ class DetectionDecision:
 
 
 def load_case_suite(path: str | Path) -> CaseSuite:
-    return CaseSuite.model_validate(json.loads(Path(path).read_text(encoding="utf-8")))
+    return CaseSuite.model_validate(json.loads(read_text(path)))
 
 
 def _normalize_text(text: str) -> str:

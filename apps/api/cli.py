@@ -5,6 +5,7 @@ import json
 import os
 from pathlib import Path
 
+from apps.api.assets import DEFAULT_SUITE
 from apps.api.config import get_settings
 from apps.api.services.audit_verify import verify_audit_log
 from apps.api.services.manifest import verify_manifest
@@ -15,9 +16,11 @@ from apps.api.services.run_store import load_passport, run_dir
 
 def _run(args: argparse.Namespace) -> int:
     profile = load_profile(args.profile) if args.profile else None
+    if args.base_url:
+        profile = {**(profile or {}), "base_url": args.base_url}
     settings = get_settings()
     model = args.model or (profile.get("model") if profile else "") or settings.default_model
-    suite = args.suite or (profile.get("suite_path") if profile else "") or "data/cases/cases.v1.json"
+    suite = args.suite or (profile.get("suite_path") if profile else "") or DEFAULT_SUITE
     run_id = run_orchestrated(
         model=model,
         only_classes=args.only_classes or (profile.get("only_classes") if profile else None),
@@ -40,7 +43,7 @@ def _benchmark(args: argparse.Namespace) -> int:
             only_classes=args.only_classes or (profile.get("only_classes") if profile else None),
             a9_mode=(profile.get("a9_mode") if profile else "auto") or "auto",
             params=profile.get("params") if profile else None,
-            suite_path=args.suite or (profile.get("suite_path") if profile else "data/cases/cases.v1.json"),
+            suite_path=args.suite or (profile.get("suite_path") if profile else DEFAULT_SUITE),
             profile=profile,
         )
         passport = load_passport(run_id)
@@ -71,6 +74,7 @@ def _parser() -> argparse.ArgumentParser:
     run.add_argument("--profile", default="")
     run.add_argument("--model", default="")
     run.add_argument("--suite", default="")
+    run.add_argument("--base-url", default="", help="Override the selected profile endpoint for this run")
     run.add_argument("--only-classes", nargs="*", default=[])
     run.add_argument("--a9-mode", choices=["auto", "compat", "strict"], default="")
     run.add_argument("--run-id", default="")

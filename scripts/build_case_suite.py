@@ -187,7 +187,7 @@ def main() -> None:
         "generated_at": "2026-02-13",
         "cases": cases,
     }
-    out = Path("data/cases/cases.v1.json")
+    out = Path("apps/api/resources/cases/cases.v1.json")
     out.write_text(json.dumps(suite, indent=2), encoding="utf-8")
     print(f"wrote {len(cases)} cases to {out}")
 

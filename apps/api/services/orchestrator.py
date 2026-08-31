@@ -6,8 +6,7 @@ import uuid
 from contextlib import ExitStack
 from pathlib import Path
 
-from jinja2 import Environment, FileSystemLoader, select_autoescape
-
+from apps.api.assets import DEFAULT_SUITE
 from apps.api.config import get_settings
 from apps.api.schemas.passport import Passport
 from apps.api.services.compliance_mapper import map_compliance
@@ -28,22 +27,11 @@ from apps.api.services.run_store import (
 )
 from apps.api.services.scoring import compute_scores
 from apps.api.services.taxonomy import EVALUATION_POLICY_VERSION, TAXONOMY_VERSION
+from apps.api.template_engine import template_environment
 
 
 def _utc_now_iso() -> str:
     return dt.datetime.now(tz=dt.timezone.utc).isoformat()
-
-
-def _jinja_env() -> Environment:
-    # Resolve template directory relative to this file so it works even if cwd changes.
-    api_dir = Path(__file__).resolve().parents[1]  # apps/api
-    templates_dir = api_dir / "templates"
-    env = Environment(
-        loader=FileSystemLoader(str(templates_dir)),
-        autoescape=select_autoescape(["html", "xml"]),
-    )
-    env.filters["tojson"] = lambda obj, indent=2: json.dumps(obj, indent=indent)  # type: ignore[assignment]
-    return env
 
 
 def run_orchestrated(
@@ -54,7 +42,7 @@ def run_orchestrated(
     params: dict | None = None,
     tenant_id: str | None = None,
     run_id: str | None = None,
-    suite_path: str | Path = "data/cases/cases.v1.json",
+    suite_path: str | Path = DEFAULT_SUITE,
     profile: dict | None = None,
 ) -> str:
     """
@@ -64,7 +52,6 @@ def run_orchestrated(
     run_id = run_id or str(uuid.uuid4())
     settings = get_settings()
     tenant_id = (tenant_id or "").strip() or settings.auth_default_tenant_id
-    suite_path = Path(suite_path)
     suite = load_case_suite(suite_path)
 
     with ExitStack() as stack:
@@ -222,7 +209,7 @@ def run_orchestrated(
 
 
 def render_passport_html(run_id: str, passport: Passport) -> str:
-    env = _jinja_env()
+    env = template_environment()
     tmpl = env.get_template("passport.html.j2")
 
     meta = load_run_meta(run_id) or {}

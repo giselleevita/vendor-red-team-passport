@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from pathlib import Path
-
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.templating import Jinja2Templates
@@ -25,9 +23,10 @@ from apps.api.services.run_store import (
     validate_case_id,
     validate_run_id,
 )
+from apps.api.template_engine import template_environment
 
 router = APIRouter()
-templates = Jinja2Templates(directory=str(Path(__file__).resolve().parents[1] / "templates"))
+templates = Jinja2Templates(env=template_environment())
 _ALLOWED_RUN_ARTIFACTS = {
     "run.json",
     "passport.json",

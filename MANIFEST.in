@@ -1,0 +1,2 @@
+recursive-include apps/api/templates *.j2
+recursive-include apps/api/resources *.json *.yaml

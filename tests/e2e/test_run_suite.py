@@ -1,3 +1,4 @@
+from apps.api.assets import DEFAULT_SUITE
 from apps.api.services.evaluator import evaluate_suite
 
 
@@ -11,5 +12,5 @@ class DummyClient:
 
 
 def test_run_suite_has_results() -> None:
-    results = evaluate_suite("data/cases/cases.v1.json", client=DummyClient())
+    results = evaluate_suite(DEFAULT_SUITE, client=DummyClient())
     assert len(results) > 0

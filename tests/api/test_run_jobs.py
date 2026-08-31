@@ -2,6 +2,7 @@ from pathlib import Path
 
 from fastapi.testclient import TestClient
 
+from apps.api.assets import DEFAULT_SUITE
 from apps.api.config import get_settings
 from apps.api.main import app
 from apps.api.services.job_executor import execute_job
@@ -64,7 +65,7 @@ def test_execute_job_marks_success(monkeypatch, tmp_path: Path) -> None:
             "model": "x",
             "a9_mode": "auto",
             "only_classes": [],
-            "suite_path": "data/cases/cases.v1.json",
+            "suite_path": DEFAULT_SUITE,
             "params": {},
         },
     )
@@ -96,7 +97,7 @@ def test_execute_job_requeues_on_failure_before_max_attempts(monkeypatch, tmp_pa
             "model": "x",
             "a9_mode": "auto",
             "only_classes": [],
-            "suite_path": "data/cases/cases.v1.json",
+            "suite_path": DEFAULT_SUITE,
             "params": {},
             "attempt_count": 0,
             "max_attempts": 3,
@@ -128,7 +129,7 @@ def test_execute_job_moves_to_dead_letter_on_final_failure(monkeypatch, tmp_path
             "model": "x",
             "a9_mode": "auto",
             "only_classes": [],
-            "suite_path": "data/cases/cases.v1.json",
+            "suite_path": DEFAULT_SUITE,
             "params": {},
             "attempt_count": 1,
             "max_attempts": 2,

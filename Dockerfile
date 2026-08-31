@@ -8,8 +8,6 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 # Install the reviewed, fully resolved runtime dependency set.
 COPY pyproject.toml LICENSE requirements.runtime.lock /app/
 COPY apps/ /app/apps/
-COPY data/ /app/data/
-COPY profiles/ /app/profiles/
 COPY scripts/ /app/scripts/
 RUN pip install --no-cache-dir -r requirements.runtime.lock
 RUN pip install --no-cache-dir --no-deps .

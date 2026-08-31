@@ -2,7 +2,7 @@ name: full_suite
 description: Full regression suite (all enabled cases)
 provider: featherless
 base_url: https://api.featherless.ai/v1
-suite_path: data/cases/cases.v1.json
+suite_path: cases/cases.v1.json
 only_classes: []
 a9_mode: auto
 params:

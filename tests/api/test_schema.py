@@ -1,10 +1,11 @@
 import json
-from pathlib import Path
 
 from jsonschema import validate
 
+from apps.api.assets import read_text
+
 
 def test_case_suite_matches_schema() -> None:
-    schema = json.loads(Path("data/cases/schema.case.json").read_text(encoding="utf-8"))
-    data = json.loads(Path("data/cases/cases.v1.json").read_text(encoding="utf-8"))
+    schema = json.loads(read_text("builtin:cases/schema.case.json"))
+    data = json.loads(read_text("builtin:cases/cases.v1.json"))
     validate(instance=data, schema=schema)

@@ -9,6 +9,7 @@ from pydantic import BaseModel, Field
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 
+from apps.api.assets import DEFAULT_SUITE
 from apps.api.config import get_settings
 from apps.api.services.audit import log_audit_event
 from apps.api.services.auth import RequestContext, hash_subject, require_roles
@@ -71,7 +72,7 @@ def create_run(
         raise HTTPException(status_code=400, detail=str(e)) from e
 
     model = (req.model or "").strip() or (profile.get("model") if profile else "") or settings.default_model
-    suite_path = (profile.get("suite_path") if profile else "") or "data/cases/cases.v1.json"
+    suite_path = (profile.get("suite_path") if profile else "") or DEFAULT_SUITE
 
     only_classes = req.only_classes if req.only_classes is not None else (profile.get("only_classes") if profile else None)
     if only_classes == []:

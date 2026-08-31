@@ -7,6 +7,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+from apps.api.assets import DEFAULT_SUITE
 from apps.api.services.orchestrator import run_orchestrated
 from apps.api.services.run_store import load_passport
 
@@ -14,7 +15,7 @@ from apps.api.services.run_store import load_passport
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--models", nargs="+", required=True, help="One or more Featherless model names")
-    ap.add_argument("--cases", default="data/cases/cases.v1.json")
+    ap.add_argument("--cases", default=DEFAULT_SUITE)
     ap.add_argument("--profile", default="", help="Profile name/path (optional)")
     ap.add_argument("--out", default="reports/benchmarks/benchmark.latest.json")
     ap.add_argument("--only-class", default="", help="If set, run only a single attack class (e.g. A9)")
@@ -37,7 +38,7 @@ def main() -> None:
         profile = load_profile(args.profile)
 
     suite_path = args.cases
-    if profile and args.cases == "data/cases/cases.v1.json" and profile.get("suite_path"):
+    if profile and args.cases == DEFAULT_SUITE and profile.get("suite_path"):
         suite_path = str(profile["suite_path"])
 
     only_classes = None

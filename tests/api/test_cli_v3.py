@@ -29,7 +29,7 @@ def test_run_command_resolves_profile_and_prints_location(monkeypatch, capsys, t
     monkeypatch.setattr(cli, "run_orchestrated", run_orchestrated)
     monkeypatch.setattr(cli, "run_dir", lambda _run_id: tmp_path)
     args = argparse.Namespace(
-        profile="quick", model="", suite="", only_classes=[], a9_mode="", run_id=""
+        profile="quick", model="", suite="", base_url="", only_classes=[], a9_mode="", run_id=""
     )
     assert cli._run(args) == 0
     assert captured["a9_mode"] == "strict"

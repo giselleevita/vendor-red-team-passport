@@ -22,18 +22,13 @@ def reports_dir() -> Path:
 
     Precedence:
     1) VENDOR_RTP_REPORTS_DIR env var
-    2) ./reports (cwd) if it exists
-    3) <repo_root>/reports
+    2) ./reports (cwd), created on first write
     """
     override = (os.environ.get("VENDOR_RTP_REPORTS_DIR") or "").strip()
     if override:
         return Path(override).expanduser().resolve()
 
-    cwd_reports = Path.cwd() / "reports"
-    if cwd_reports.exists():
-        return cwd_reports.resolve()
-
-    return (_repo_root() / "reports").resolve()
+    return (Path.cwd() / "reports").resolve()
 
 
 def runs_dir() -> Path:
