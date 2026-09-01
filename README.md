@@ -3,7 +3,7 @@
 [![CI](https://github.com/giselleevita/vendor-red-team-passport/actions/workflows/ci.yml/badge.svg)](https://github.com/giselleevita/vendor-red-team-passport/actions/workflows/ci.yml)
 ![Cases](https://img.shields.io/badge/evaluation%20cases-100-blue)
 ![Calibration](https://img.shields.io/badge/calibration-260%20synthetic%20responses-2ea44f)
-![Version](https://img.shields.io/badge/version-0.3.0-green)
+![Version](https://img.shields.io/badge/version-0.2.0-green)
 ![Python](https://img.shields.io/badge/python-3.11%20%7C%203.12-blue)
 ![License](https://img.shields.io/badge/license-Apache--2.0-green)
 
