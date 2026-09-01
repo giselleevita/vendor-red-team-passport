@@ -38,7 +38,7 @@ jobs:
           subject-path: dist/*.whl
           sbom-path: sbom.cdx.json
       - name: Upload release evidence
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: v0.3-supply-chain-evidence
           path: |
