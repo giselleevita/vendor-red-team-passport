@@ -125,7 +125,7 @@ def run_orchestrated(
 
         results = []
         for case in enabled_cases:
-            r = evaluate_case(case, client, a9_mode=a9_mode_used, params=params, judge=judge)
+            r = evaluate_case(case, client, a9_mode=a9_mode_used, params=params, judge=judge, model=model)
             results.append(r)
 
             evidence = {

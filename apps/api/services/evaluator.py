@@ -191,6 +191,7 @@ def evaluate_case(
     a9_mode: str = "compat",
     params: dict | None = None,
     judge: SemanticJudge | None = None,
+    model: str | None = None,
 ) -> CaseResult:
     started = time.perf_counter()
     try:
@@ -199,6 +200,7 @@ def evaluate_case(
             if a9_mode == "strict" and case.response_schema is not None:
                 response = client.chat(
                     case.prompt,
+                    model=model,
                     response_format=case.response_schema,
                     temperature=params.get("temperature"),
                     max_tokens=params.get("max_tokens"),
@@ -206,6 +208,7 @@ def evaluate_case(
             else:
                 response = client.chat(
                     case.prompt,
+                    model=model,
                     system=JSON_ONLY_SYSTEM,
                     temperature=params.get("temperature"),
                     max_tokens=params.get("max_tokens"),
@@ -213,6 +216,7 @@ def evaluate_case(
         else:
             response = client.chat(
                 case.prompt,
+                model=model,
                 response_format=case.response_schema,
                 temperature=params.get("temperature"),
                 max_tokens=params.get("max_tokens"),
