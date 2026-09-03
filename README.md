@@ -13,7 +13,7 @@ Vendor Red-Team Passport runs versioned adversarial cases against an LLM endpoin
 
 Provider profiles can select Featherless or another OpenAI-compatible endpoint while credentials remain environment-only.
 
-[View the synthetic safe demo](https://giselleevita.github.io/vendor-red-team-passport/) · [Open the sample JSON](site/passport.json) · [Read the case study](docs/CASE_STUDY.md)
+[View the synthetic safe demo](https://giselleevita.github.io/vendor-red-team-passport/) · [Open the sample JSON](site/passport.json) · [Read the case study](docs/CASE_STUDY.md) · **[Read live results — a real run against two local models](docs/RESULTS.md)**
 
 ![Synthetic Passport v0.3 report](docs/screenshots/passport-v030.png)
 
