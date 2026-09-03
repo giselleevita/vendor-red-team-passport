@@ -133,6 +133,8 @@ Each run writes:
 | `GET` | `/metrics` | Auditor/admin metrics |
 | `GET` | `/compare` | Compare two runs |
 
+Profiles select a `provider` adapter, not just an endpoint. `featherless` (the default, used by the bundled profiles) and `openai-compatible` are both first-class — the same HTTP client and retry/pacing logic serve either, so pointing the suite at a different vendor is a config change, not a code change. See [`profiles/openai_compatible_example.yaml`](profiles/openai_compatible_example.yaml): copy it, set `base_url` to the target endpoint, export `TARGET_API_KEY`, and run. Covered by [`tests/api/test_providers_v3.py`](tests/api/test_providers_v3.py).
+
 Profiles select the case suite, class subset, structured-output mode, model parameters, adapter, and target endpoint. Endpoint credentials remain environment configuration; profile files reject credential-shaped fields.
 
 ## Security posture
