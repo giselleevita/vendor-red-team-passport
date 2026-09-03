@@ -11,7 +11,7 @@
 
 Vendor Red-Team Passport runs versioned adversarial cases against an LLM endpoint and produces a reviewable Passport: JSON and HTML results, deterministic release gates, sanitized evidence, policy metadata, and a hashed artifact manifest.
 
-Provider profiles can select Featherless or another OpenAI-compatible endpoint while credentials remain environment-only. The project does **not** claim universal vendor support, certification, or complete OWASP/NIST coverage.
+Provider profiles can select Featherless or another OpenAI-compatible endpoint while credentials remain environment-only.
 
 [View the synthetic safe demo](https://giselleevita.github.io/vendor-red-team-passport/) · [Open the sample JSON](site/passport.json) · [Read the case study](docs/CASE_STUDY.md)
 
@@ -74,7 +74,14 @@ One command runs the locked offline suite, checks coverage, and verifies the sta
 make reviewer-demo
 ```
 
-Or run the API:
+Or run the API from the published image (no local Python setup):
+
+```bash
+docker run --rm -p 8000:8000 ghcr.io/giselleevita/vendor-red-team-passport:latest
+curl http://127.0.0.1:8000/health
+```
+
+Or run it from source:
 
 ```bash
 python -m venv .venv
@@ -140,6 +147,7 @@ See [SECURITY.md](SECURITY.md), [threat model](docs/threat-model.md), and [trans
 
 ## Limitations
 
+- No universal vendor support, certification, or complete OWASP/NIST coverage is claimed — see [Taxonomy v2](#taxonomy-v2) for exactly what is and isn't mapped.
 - Deterministic text rules cannot fully understand natural language; ambiguous results require review or an optional judge.
 - A semantic judge is another untrusted provider boundary and receives the evaluated prompt/response ephemerally.
 - Provider behavior can drift even at temperature zero.

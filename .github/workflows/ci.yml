@@ -55,7 +55,28 @@ jobs:
     name: Docker Build Check
     runs-on: ubuntu-latest
     needs: test
+    permissions:
+      contents: read
+      packages: write
     steps:
       - uses: actions/checkout@v6
+
       - name: Build Docker image
         run: docker build -t vrtp:ci .
+
+      - name: Log in to GHCR
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push image to GHCR (main only)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          IMAGE="ghcr.io/${{ github.repository_owner }}/vendor-red-team-passport"
+          docker tag vrtp:ci "$IMAGE:latest"
+          docker tag vrtp:ci "$IMAGE:${{ github.sha }}"
+          docker push "$IMAGE:latest"
+          docker push "$IMAGE:${{ github.sha }}"
