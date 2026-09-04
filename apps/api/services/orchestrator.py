@@ -165,7 +165,12 @@ def run_orchestrated(
         }
         compliance = map_compliance(scores["failed_cases"])
         policy = current_policy()
-        coverage = build_coverage_report(evaluated_classes=sorted(set([c.attack_class for c in enabled_cases])))
+        _case_counts: dict[str, int] = {}
+        for _c in enabled_cases:
+            _case_counts[_c.attack_class] = _case_counts.get(_c.attack_class, 0) + 1
+        coverage = build_coverage_report(
+            evaluated_classes=sorted(_case_counts), case_counts=_case_counts
+        )
 
         passport = Passport(
             run_id=run_id,
@@ -238,8 +243,12 @@ def render_passport_html(run_id: str, passport: Passport) -> str:
             return None
 
     policy = _load_json("policy.json") or current_policy()
+    _class_scores = [
+        c for c in (passport.model_dump().get("class_scores") or []) if isinstance(c, dict) and c.get("attack_class")
+    ]
     coverage = _load_json("coverage.json") or build_coverage_report(
-        evaluated_classes=sorted({c.get("attack_class") for c in (passport.model_dump().get("class_scores") or []) if isinstance(c, dict) and c.get("attack_class")})
+        evaluated_classes=sorted({c["attack_class"] for c in _class_scores}),
+        case_counts={c["attack_class"]: int(c.get("count") or 0) for c in _class_scores},
     )
     compliance = _load_json("compliance.json") or (passport.model_dump().get("executive_verdict", {}) or {}).get("compliance_mapping", {})
 

@@ -49,20 +49,26 @@ Earlier keyword logic incorrectly treated those safe refusals as failures becaus
 
 ## Taxonomy v2
 
-| ID | Actual evaluation class | OWASP GenAI 2025 relationship |
-|---|---|---|
-| A1 | Direct prompt injection | LLM01:2025 — direct |
-| A2 | Jailbreak and role-play | LLM01:2025 — direct |
-| A3 | Obfuscated prompt injection | LLM01:2025 — direct |
-| A4 | System-prompt leakage | LLM07:2025 — direct |
-| A5 | Secret exfiltration | LLM02:2025 — direct |
-| A6 | Cross-session disclosure | LLM02:2025 — direct |
-| A7 | Malware enablement | Policy-safety; no direct OWASP claim |
-| A8 | Unsafe transformation/social engineering | Policy-safety; no direct OWASP claim |
-| A9 | Structured-output reliability | Related to LLM05:2025; not full coverage |
-| A10 | Token and resource abuse | LLM10:2025 — direct |
+| ID | Actual evaluation class | Cases | OWASP GenAI 2025 relationship |
+|---|---|---:|---|
+| A1 | Direct prompt injection | 10 | LLM01:2025 — direct |
+| A2 | Jailbreak and role-play | 10 | LLM01:2025 — direct |
+| A3 | Obfuscated prompt injection | 10 | LLM01:2025 — direct |
+| A4 | System-prompt leakage | 10 | LLM07:2025 — direct |
+| A5 | Secret exfiltration | 10 | LLM02:2025 — direct |
+| A6 | Cross-session disclosure | 10 | LLM02:2025 — direct |
+| A7 | Malware enablement | 10 | Policy-safety; no direct OWASP claim |
+| A8 | Unsafe transformation/social engineering | 10 | Policy-safety; no direct OWASP claim |
+| A9 | Structured-output reliability | 10 | Related to LLM05:2025; not full coverage |
+| A10 | Token and resource abuse | 10 | LLM10:2025 — direct |
 
-Mappings are communication aids, not certification. Class evaluations map to NIST AI RMF 1.0 `MEASURE` and `MANAGE`; suite governance and context definition relate to `GOVERN` and `MAP`. NIST SP 800-53 control identifiers are intentionally excluded from this function-level crosswalk.
+**Mapping is not coverage.** Each class is exercised by 10 fixed cases (n=100). A class →
+OWASP entry means those 10 cases probe that class; it does **not** mean the OWASP category
+is comprehensively tested. Mappings are versioned communication aids, not certification.
+Class evaluations map to NIST AI RMF 1.0 `MEASURE` and `MANAGE`; suite governance and
+context definition relate to `GOVERN` and `MAP`. NIST SP 800-53 control identifiers are
+intentionally excluded from this function-level crosswalk. The generated Passport carries
+the same per-class counts and disclaimer in its `coverage` artifact.
 
 Authoritative mappings: [`apps/api/services/taxonomy.py`](apps/api/services/taxonomy.py) and [`data/coverage.json`](data/coverage.json).
 
