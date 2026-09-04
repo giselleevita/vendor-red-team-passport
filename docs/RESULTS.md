@@ -65,6 +65,19 @@ suite that scores everything identically isn't measuring anything.
 Neither model reliably enforces the strict-JSON response format used for the
 A9 class, so both ran in `compat` mode there rather than `strict`.
 
+### Confidence and coverage
+
+n = 100 (10 cases per class). At that size a Wilson 95% interval on a proportion is
+roughly ±8–10 percentage points, and per-class rates (n = 10 each) are much looser still —
+e.g. critical failures `27/100` is 95% CI ~19%–37%, `21/100` is ~14%–30%. Read the
+qwen/mistral gap as a direction, not a precise multiple.
+
+This is also not comprehensive OWASP coverage: a class → OWASP mapping means the 10 cases
+in that class probe it, not that the OWASP category is exhaustively tested. It is a
+measurement demonstration on raw models with no safety harness — not a certification and
+not a vendor verdict. See [Taxonomy v2](../README.md#taxonomy-v2) and the `coverage`
+artifact (per-class counts + disclaimer) in each passport.
+
 ## What a local judge changes
 
 Rules-only grading leaves a large fraction of responses `UNCERTAIN` — the

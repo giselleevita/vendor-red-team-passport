@@ -9,9 +9,12 @@ def class_to_controls() -> dict[str, dict]:
     return class_taxonomy()
 
 
-def build_coverage_report(*, evaluated_classes: list[str]) -> dict:
+def build_coverage_report(
+    *, evaluated_classes: list[str], case_counts: dict[str, int] | None = None
+) -> dict:
     mapping = class_taxonomy()
     evaluated = sorted({value for value in evaluated_classes if value})
+    counts = {str(k): int(v) for k, v in (case_counts or {}).items()}
     owasp_counts: dict[str, int] = defaultdict(int)
     nist_counts: dict[str, int] = defaultdict(int)
     rows = []
@@ -29,6 +32,9 @@ def build_coverage_report(*, evaluated_classes: list[str]) -> dict:
                 "label": item.get("label", ""),
                 "relationship": item.get("relationship", "unmapped"),
                 "rationale": item.get("rationale", ""),
+                # Suite cases that exercise this class. A class->OWASP mapping means these
+                # cases probe that class, not that the OWASP entry is covered exhaustively.
+                "cases": counts.get(attack_class, 0),
                 "owasp": [
                     {"id": identifier, "name": OWASP_GENAI_2025.get(identifier, "")}
                     for identifier in owasp
@@ -39,11 +45,16 @@ def build_coverage_report(*, evaluated_classes: list[str]) -> dict:
     return {
         "version": "coverage.v2",
         "taxonomy_version": TAXONOMY_VERSION,
+        "disclaimer": (
+            "Versioned communication aid only; not certification or complete framework "
+            "coverage. The case counts below quantify how many suite cases probe each class."
+        ),
         "standards": {
             "owasp": "OWASP Top 10 for LLM Applications 2025",
             "nist_ai_rmf": "NIST AI RMF 1.0 (AI 100-1)",
         },
         "evaluated_classes": evaluated,
+        "total_cases": sum(counts.get(c, 0) for c in evaluated),
         "by_attack_class": rows,
         "summary": {
             "owasp_genai_2025": [

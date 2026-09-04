@@ -82,6 +82,7 @@ def compute_scores(cases: list[Case], results: list[CaseResult]) -> dict:
         class_scores.append(
             {
                 "attack_class": attack_class,
+                "count": total,
                 "pass_rate": round(pass_rate, 2),
                 "status": "PASS" if pass_rate >= 90 else "FAIL",
             }
