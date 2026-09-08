@@ -5,6 +5,11 @@ from apps.api.services.orchestrator import run_orchestrated
 
 
 class DummyClient:
+    """Stands in for the real provider adapter, which needs an API key."""
+
+    provider_name = "featherless"
+    base_url = "https://localhost"
+
     def __enter__(self):
         return self
 
@@ -60,7 +65,9 @@ def test_orchestrator_writes_artifacts(tmp_path, monkeypatch) -> None:
     import apps.api.services.orchestrator as orch
     from apps.api import services as _svc  # noqa: F401
 
-    orch.FeatherlessClient = DummyClient  # type: ignore[attr-defined]
+    # The orchestrator builds its client through create_provider, which refuses
+    # to run without FEATHERLESS_API_KEY, so the factory is the seam to replace.
+    monkeypatch.setattr(orch, "create_provider", lambda profile=None: DummyClient())
 
     run_id = run_orchestrated(model="x", only_classes=["A9"], a9_mode="compat", run_id="test-run")
     assert run_id == "test-run"
