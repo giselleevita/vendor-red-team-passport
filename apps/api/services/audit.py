@@ -1,13 +1,20 @@
 from __future__ import annotations
 
 import datetime as dt
-import fcntl
 import hashlib
 import hmac
 import json
 import os
+import time
 import uuid
+from contextlib import contextmanager
 from pathlib import Path
+
+try:  # POSIX advisory file lock
+    import fcntl
+except ImportError:  # Windows has no fcntl module
+    fcntl = None
+    import msvcrt
 
 from apps.api.config import get_settings
 from apps.api.services.run_store import reports_dir
@@ -70,6 +77,40 @@ def _write_checkpoint(log_path: Path, event: dict, secret: str) -> None:
     os.replace(temporary, target)
 
 
+@contextmanager
+def _exclusive_lock(lock_path: Path):
+    """Use an advisory one-byte lock on POSIX and Windows.
+
+    The audit chain is append-only, so serializing the read-last-event,
+    append-event, and checkpoint update prevents duplicate sequences. Keeping
+    the platform behavior here also lets the verification CLI import on Windows.
+    """
+    with lock_path.open("a+", encoding="utf-8") as lock_handle:
+        if fcntl is not None:
+            fcntl.flock(lock_handle.fileno(), fcntl.LOCK_EX)
+            try:
+                yield
+            finally:
+                fcntl.flock(lock_handle.fileno(), fcntl.LOCK_UN)
+            return
+
+        lock_handle.seek(0)
+        lock_handle.write("0")
+        lock_handle.flush()
+        while True:
+            try:
+                lock_handle.seek(0)
+                msvcrt.locking(lock_handle.fileno(), msvcrt.LK_NBLCK, 1)
+                break
+            except OSError:
+                time.sleep(0.05)
+        try:
+            yield
+        finally:
+            lock_handle.seek(0)
+            msvcrt.locking(lock_handle.fileno(), msvcrt.LK_UNLCK, 1)
+
+
 def log_audit_event(
     *,
     action: str,
@@ -86,30 +127,26 @@ def log_audit_event(
     lock_path = log_path.with_suffix(".lock")
     secret = (get_settings().vendor_rtp_manifest_hmac_key or "").strip()
 
-    with lock_path.open("a+", encoding="utf-8") as lock_handle:
-        fcntl.flock(lock_handle.fileno(), fcntl.LOCK_EX)
-        try:
-            last_sequence, previous_hash = _last_event(log_path)
-            event = {
-                "format_version": AUDIT_FORMAT_VERSION,
-                "sequence": last_sequence + 1,
-                "previous_event_hash": previous_hash,
-                "event_id": str(uuid.uuid4()),
-                "ts": dt.datetime.now(tz=dt.UTC).isoformat(),
-                "action": action,
-                "result": result,
-                "actor": actor,
-                "tenant_id": tenant_id,
-                "method": method,
-                "resource": resource,
-                "detail": detail[:300],
-            }
-            if secret:
-                event["event_hmac_sha256"] = _compute_event_hmac(_canonical_json(event), secret)
-            with log_path.open("a", encoding="utf-8") as output:
-                output.write(_canonical_json(event) + "\n")
-                output.flush()
-                os.fsync(output.fileno())
-            _write_checkpoint(log_path, event, secret)
-        finally:
-            fcntl.flock(lock_handle.fileno(), fcntl.LOCK_UN)
+    with _exclusive_lock(lock_path):
+        last_sequence, previous_hash = _last_event(log_path)
+        event = {
+            "format_version": AUDIT_FORMAT_VERSION,
+            "sequence": last_sequence + 1,
+            "previous_event_hash": previous_hash,
+            "event_id": str(uuid.uuid4()),
+            "ts": dt.datetime.now(tz=dt.UTC).isoformat(),
+            "action": action,
+            "result": result,
+            "actor": actor,
+            "tenant_id": tenant_id,
+            "method": method,
+            "resource": resource,
+            "detail": detail[:300],
+        }
+        if secret:
+            event["event_hmac_sha256"] = _compute_event_hmac(_canonical_json(event), secret)
+        with log_path.open("a", encoding="utf-8") as output:
+            output.write(_canonical_json(event) + "\n")
+            output.flush()
+            os.fsync(output.fileno())
+        _write_checkpoint(log_path, event, secret)
