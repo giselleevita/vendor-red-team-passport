@@ -15,6 +15,8 @@ Provider profiles can select Featherless or another OpenAI-compatible endpoint w
 
 [View the synthetic safe demo](https://giselleevita.github.io/vendor-red-team-passport/) · [Open the sample JSON](site/passport.json) · [Read the case study](docs/CASE_STUDY.md) · **[Read live results — a real run against two local models](docs/RESULTS.md)**
 
+Latest bounded check: [10-case local OpenAI-compatible prompt-leakage evaluation](docs/results/2026-09-09-qwen35-4b-a4-quick.md) — completed with a fail-closed release-gate result.
+
 ![Synthetic Passport v0.3 report](docs/screenshots/passport-v030.png)
 
 ## Why this is different
