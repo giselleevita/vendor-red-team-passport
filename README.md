@@ -112,6 +112,10 @@ curl -H "Authorization: Bearer $TOKEN" http://127.0.0.1:8000/runs
 
 The Featherless API key is only required for a live model evaluation. Offline tests and the synthetic demo require no model API credentials.
 
+For an authorized external-provider run, follow the credential-safe [live provider
+evaluation protocol](docs/LIVE_PROVIDER_RUN.md). It defines the minimum evidence,
+verification, and publication standard; it does not claim a live result in advance.
+
 ## Run artifacts
 
 Each run writes:
