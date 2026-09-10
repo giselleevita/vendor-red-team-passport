@@ -51,6 +51,27 @@ jobs:
           name: coverage-report
           path: coverage.xml
 
+  windows-audit-chain:
+    name: Windows audit-chain verification
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.lock
+          pip install -e . --no-deps
+
+      - name: Verify Windows audit locking and tamper detection
+        env:
+          VENDOR_RTP_REPORTS_DIR: ${{ runner.temp }}\\vrtp_reports_ci
+        run: pytest tests/api/test_audit_chain_v2.py tests/api/test_recovered_security.py -v --tb=short
+
   docker:
     name: Docker Build Check
     runs-on: ubuntu-latest
