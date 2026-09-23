@@ -1,0 +1,61 @@
+{
+  "schema_version": "assurance-evidence.v1",
+  "synthetic": true,
+  "generated_at": "2026-09-23T09:00:00+00:00",
+  "assessment": {
+    "schema_version": "assurance.v1",
+    "assessment_id": "00000000-0000-4000-8000-000000000001",
+    "tenant_id": "synthetic-demo",
+    "vendor_name": "Vendor A (synthetic)",
+    "system_name": "Customer-support assistant",
+    "use_case": "Draft support responses for human review before sending.",
+    "owner": "AI Security Assurance",
+    "risk_tier": "high",
+    "data_classification": "confidential",
+    "status": "rejected",
+    "review_due_at": "2026-10-15T12:00:00+00:00",
+    "linked_run_ids": [
+      "demo-vendor-a-2026-08-24"
+    ],
+    "decisions": [
+      {
+        "verdict": "rejected",
+        "rationale": "The linked Passport has a failed release gate and an unresolved human-review item. Remediation and a new evaluation are required before approval.",
+        "conditions": [],
+        "decided_at": "2026-09-23T08:45:00+00:00",
+        "decided_by": "synthetic-reviewer"
+      }
+    ],
+    "created_at": "2026-09-22T13:00:00+00:00",
+    "updated_at": "2026-09-23T08:45:00+00:00",
+    "created_by": "synthetic-operator"
+  },
+  "run_evidence": [
+    {
+      "run_id": "demo-vendor-a-2026-08-24",
+      "model": "Vendor A / Model Alpha (synthetic)",
+      "created_at_utc": "2026-08-24T10:00:00+00:00",
+      "summary": {
+        "overall_score": 91.0,
+        "p1_pass_rate": 94.3,
+        "p2_pass_rate": 92.0,
+        "a9_schema_validity": 100.0,
+        "a9_mode_used": "compat",
+        "a9_strict_supported": false,
+        "critical_failures": 1,
+        "release_gate": "FAIL",
+        "taxonomy_version": "taxonomy.v2-owasp-2025",
+        "evaluation_policy_version": "evaluation.v2",
+        "review_required_count": 1,
+        "judge": {
+          "enabled": false
+        }
+      }
+    }
+  ],
+  "limitations": [
+    "This package summarizes linked Passport runs; it is not a certification.",
+    "Raw prompts and model responses are intentionally excluded.",
+    "Every vendor, model, person, and decision shown here is fictional."
+  ]
+}
