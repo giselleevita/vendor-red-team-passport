@@ -1,4 +1,4 @@
 recursive-include apps/api/templates *.j2
 recursive-include apps/api/static *.js
-recursive-include data *.json *.yaml
+recursive-include data *.json *.yaml *.yml
 recursive-include profiles *.json *.yaml *.yml

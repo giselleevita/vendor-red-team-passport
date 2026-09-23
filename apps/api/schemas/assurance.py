@@ -12,6 +12,7 @@ class AssessmentStatus(StrEnum):
     APPROVED = "approved"
     APPROVED_WITH_CONDITIONS = "approved_with_conditions"
     REJECTED = "rejected"
+    EXPIRED = "expired"
 
 
 class RiskTier(StrEnum):
@@ -109,7 +110,7 @@ class AssessmentDecision(BaseModel):
 
 
 class AssessmentRecord(BaseModel):
-    schema_version: str = "assurance.v1"
+    schema_version: str = "assurance.v2"
     assessment_id: str
     tenant_id: str
     vendor_name: str
@@ -122,6 +123,36 @@ class AssessmentRecord(BaseModel):
     review_due_at: datetime | None = None
     linked_run_ids: list[str] = Field(default_factory=list)
     decisions: list[AssessmentDecision] = Field(default_factory=list)
+    baseline_run_id: str | None = None
+    baseline_set_at: datetime | None = None
+    baseline_set_by: str | None = None
+    baseline_history: list[dict] = Field(default_factory=list)
+    policy_id: str | None = None
+    policy_version: str | None = None
+    policy_digest: str | None = None
+    last_evaluation: dict | None = None
+    evaluation_history: list[dict] = Field(default_factory=list)
+    expired: bool = False
     created_at: datetime
     updated_at: datetime
     created_by: str
+
+
+class BaselineSetRequest(BaseModel):
+    run_id: str = Field(min_length=1, max_length=120)
+    rationale: str = Field(min_length=10, max_length=1000)
+
+    @field_validator("run_id", "rationale")
+    @classmethod
+    def strip_baseline_text(cls, value: str) -> str:
+        return value.strip()
+
+
+class AssessmentEvaluateRequest(BaseModel):
+    candidate_run_id: str = Field(min_length=1, max_length=120)
+    policy_id: str | None = Field(default=None, pattern=r"^[a-z0-9][a-z0-9_.-]{0,79}$")
+
+    @field_validator("candidate_run_id")
+    @classmethod
+    def strip_candidate(cls, value: str) -> str:
+        return value.strip()
