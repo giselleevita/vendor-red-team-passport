@@ -1,20 +1,30 @@
 # Changelog
 
-## Unreleased - v0.4.0
+## Unreleased
 
-### Added
+### Application and agent testing (v0.5 development)
+
+- Add bounded multi-turn scenarios for indirect prompt injection, tool authorization, argument validation, synthetic canary disclosure, and resource control.
+- Add OpenAI-compatible agent, fixed-contract HTTP application, and offline scripted target adapters.
+- Simulate authorized tool results without executing live tools or external side effects.
+- Add `vendor-rtp agent-test`, `POST /agent-runs`, sanitized reports, evidence hashes, and manifest verification.
+- Reject nested credentials, remote JSON Schema references, unknown request fields, unsafe target paths, oversized responses, and over-budget runs.
+
+### Vendor assurance workflow (v0.4 development)
+
+#### Added
 
 - Tenant-isolated vendor and AI-system assessment records.
 - A review lifecycle linking Passport runs to auditor decisions and conditions.
 - Sanitized assurance evidence packages that exclude raw prompts and responses.
 - A four-release product roadmap focused on vendor-assurance teams.
 
-### Fixed
+#### Fixed
 
 - Keep the orchestrator artifact test offline after the provider-factory refactor.
 - Encode validator context safely so invalid API input returns the documented 422 response.
 
-### Known limitations
+#### Known limitations
 
 - The initial assessment store is file-backed and intended for local or single-instance use.
 - The assessment workflow does not yet include a browser UI, expiring approvals, or notifications.

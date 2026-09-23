@@ -1,0 +1,9 @@
+name: agent_http_json_example
+description: Defensive test profile for an authorized application implementing the fixed JSON contract
+provider: openai-compatible
+base_url: https://authorized-app.example
+model: application-under-test
+scenario_suite_path: data/scenarios/defensive.v1.json
+target:
+  type: http-json-app
+  path: /v1/agent-test

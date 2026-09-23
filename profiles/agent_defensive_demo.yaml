@@ -1,0 +1,8 @@
+name: agent_defensive_demo
+description: Offline defensive agent test with simulated tools and synthetic fixtures
+provider: openai-compatible
+model: synthetic-agent
+scenario_suite_path: data/scenarios/defensive.v1.json
+target:
+  type: scripted
+  script_path: data/scenarios/defensive_demo.responses.json

@@ -140,6 +140,7 @@ Each run writes:
 |---|---|---|
 | `GET` | `/health` | Public liveness |
 | `POST` | `/runs` | Queue an evaluation |
+| `POST` | `/agent-runs` | Queue a defensive multi-turn application/agent evaluation |
 | `GET` | `/runs/jobs/{job_id}` | Tenant-scoped job status |
 | `POST` | `/runs/jobs/{job_id}/cancel` | Cancel a tenant-owned job |
 | `GET` | `/passports/{run_id}` | Tenant-scoped Passport JSON |
@@ -158,6 +159,19 @@ Each run writes:
 Assessments are tenant-isolated records containing the vendor, evaluated system, intended use, owner, risk tier, data classification, review deadline, linked Passport runs, and decision history. Operators prepare and submit assessments; auditors or administrators make the final decision. The evidence package contains only Passport summaries and intentionally excludes raw prompts and model responses.
 
 The current `assurance.v1` store is file-backed and suited to local evaluation and demonstrations. It uses atomic replacement and optimistic concurrency checks, but production multi-instance deployments should wait for the planned SQL-backed assessment store in v1.0.
+
+### Defensive application and agent testing
+
+The v0.5 runner exercises multi-turn authorization, indirect prompt injection, synthetic canary disclosure, tool-argument validation, and tool-call budgets. Tools are definitions plus synthetic fixtures: the harness validates proposed calls but never invokes real tools or external side effects.
+
+Run the 16-case expanded offline demonstration without credentials or network access:
+
+```bash
+vendor-rtp agent-test --profile agent_defensive_demo
+# or: make agent-demo
+```
+
+The run writes `agent-report.json`, `agent-report.html`, sanitized per-scenario evidence, and a hashed manifest. Raw transcripts and tool arguments are not persisted. Curated cases can use deterministic spacing and Base64 transport mutations; attacker-model generation is not enabled by default. See [defensive agent testing](docs/agent-testing.md) for the target contract and safety boundaries.
 
 Profiles select a `provider` adapter, not just an endpoint. `featherless` (the default, used by the bundled profiles) and `openai-compatible` are both first-class — the same HTTP client and retry/pacing logic serve either, so pointing the suite at a different vendor is a config change, not a code change. See [`profiles/openai_compatible_example.yaml`](profiles/openai_compatible_example.yaml): copy it, set `base_url` to the target endpoint, export `TARGET_API_KEY`, and run. Covered by [`tests/api/test_providers_v3.py`](tests/api/test_providers_v3.py).
 
@@ -190,7 +204,7 @@ pytest tests/ --ignore=tests/e2e --cov=apps/api --cov-fail-under=85
 docker build -t vendor-red-team-passport:local .
 ```
 
-The packaged CLI exposes `vendor-rtp run`, `benchmark`, `verify-manifest`, and `verify-audit`. See [CONTRIBUTING.md](CONTRIBUTING.md), [architecture](docs/architecture.md), and the [v0.3 delivery notes](docs/v0.3-roadmap.md).
+The packaged CLI exposes `vendor-rtp run`, `agent-test`, `benchmark`, `verify-manifest`, and `verify-audit`. See [CONTRIBUTING.md](CONTRIBUTING.md), [architecture](docs/architecture.md), and the [product roadmap](docs/product-roadmap.md).
 
 ## Ethics and license
 

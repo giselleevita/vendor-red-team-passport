@@ -1,11 +1,6 @@
 from __future__ import annotations
 
-from pathlib import Path
-
-
-def _repo_root() -> Path:
-    # apps/api/services/compliance_mapper.py -> repo root is 3 parents up.
-    return Path(__file__).resolve().parents[3]
+from apps.api.assets import compliance_crosswalk
 
 
 def map_compliance(failed_cases: list[dict]) -> dict:
@@ -15,7 +10,7 @@ def map_compliance(failed_cases: list[dict]) -> dict:
     """
     failed_classes = {str(f.get("attack_class", "")).strip() for f in failed_cases if f.get("attack_class")}
 
-    crosswalk_path = _repo_root() / "data" / "compliance" / "crosswalk.v1.yaml"
+    crosswalk_path = compliance_crosswalk()
     try:
         import yaml  # type: ignore
 

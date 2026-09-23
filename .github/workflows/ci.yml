@@ -77,10 +77,48 @@ jobs:
           VENDOR_RTP_REPORTS_DIR: ${{ runner.temp }}\\vrtp_reports_ci
         run: pytest tests/api/test_audit_chain_v2.py tests/api/test_recovered_security.py -v --tb=short
 
+  installed-package:
+    name: Installed wheel defensive smoke test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Build wheel
+        run: python -m pip wheel . --wheel-dir "${{ runner.temp }}/wheelhouse"
+
+      - name: Install wheel outside checkout
+        working-directory: ${{ runner.temp }}
+        run: python -m pip install wheelhouse/vendor_red_team_passport-*.whl --force-reinstall
+
+      - name: Run packaged defensive scenario suite
+        working-directory: ${{ runner.temp }}
+        env:
+          VENDOR_RTP_REPORTS_DIR: ${{ runner.temp }}/installed-package-reports
+        run: |
+          vendor-rtp agent-test --profile agent_defensive_demo --run-id installed-wheel-demo
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          root = Path(os.environ["VENDOR_RTP_REPORTS_DIR"]) / "runs" / "installed-wheel-demo"
+          for name in ("agent-report.html", "agent-report.json", "manifest.json"):
+              assert (root / name).is_file(), name
+          summary = json.loads((root / "agent-report.json").read_text())["summary"]
+          assert summary["release_gate"] == "PASS"
+          assert summary["total_scenarios"] == 16
+          PY
+
   docker:
     name: Docker Build Check
     runs-on: ubuntu-latest
-    needs: test
+    needs: [test, installed-package]
     permissions:
       contents: read
       packages: write

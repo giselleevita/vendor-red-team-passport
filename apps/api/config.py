@@ -44,7 +44,11 @@ class Settings(BaseSettings):
     judge_input_cost_per_million_tokens_usd: float = 0.0
     judge_output_cost_per_million_tokens_usd: float = 0.0
     request_max_body_bytes: int = 10 * 1024 * 1024
+    provider_max_response_bytes: int = 1024 * 1024
     rate_limit_storage_uri: str = "memory://"
+    agent_max_response_bytes: int = 256 * 1024
+    agent_max_total_turns: int = 64
+    agent_max_total_tool_calls: int = 64
 
 
 @lru_cache(maxsize=1)

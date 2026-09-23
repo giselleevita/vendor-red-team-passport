@@ -1,7 +1,7 @@
 import pytest
 
 from apps.api.config import get_settings
-from apps.api.config_validation import validate_auth_secrets, validate_judge_config
+from apps.api.config_validation import validate_auth_secrets, validate_judge_config, validate_request_controls
 
 
 def test_auth_requires_issuer_and_audience(monkeypatch) -> None:
@@ -64,3 +64,22 @@ def test_judge_rejects_credentials_in_url_and_negative_cost(monkeypatch) -> None
     get_settings.cache_clear()
     with pytest.raises(RuntimeError, match="cannot be negative"):
         validate_judge_config()
+
+
+def test_agent_and_provider_resource_budgets_are_bounded(monkeypatch) -> None:
+    monkeypatch.setenv("PROVIDER_MAX_RESPONSE_BYTES", "512")
+    get_settings.cache_clear()
+    with pytest.raises(RuntimeError, match="PROVIDER_MAX_RESPONSE_BYTES"):
+        validate_request_controls()
+
+    monkeypatch.setenv("PROVIDER_MAX_RESPONSE_BYTES", "2048")
+    monkeypatch.setenv("AGENT_MAX_RESPONSE_BYTES", "4096")
+    get_settings.cache_clear()
+    with pytest.raises(RuntimeError, match="AGENT_MAX_RESPONSE_BYTES"):
+        validate_request_controls()
+
+    monkeypatch.setenv("AGENT_MAX_RESPONSE_BYTES", "1024")
+    monkeypatch.setenv("AGENT_MAX_TOTAL_TURNS", "0")
+    get_settings.cache_clear()
+    with pytest.raises(RuntimeError, match="AGENT_MAX_TOTAL_TURNS"):
+        validate_request_controls()

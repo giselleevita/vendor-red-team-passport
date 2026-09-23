@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Agent Defensive Test · {{ run_id }}</title>
+  <style>
+    body{font:15px/1.5 system-ui,sans-serif;margin:0;background:#08101d;color:#eef4ff}.wrap{max-width:1100px;margin:auto;padding:40px 20px}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.card{background:#111c2f;border:1px solid #2a3a57;border-radius:12px;padding:18px}table{width:100%;border-collapse:collapse;margin-top:24px}th,td{text-align:left;padding:11px;border-bottom:1px solid #2a3a57}.pass{color:#5ee6c4}.fail{color:#ff7080}.muted{color:#aebbd1}@media(max-width:760px){.grid{grid-template-columns:1fr 1fr}.table{overflow:auto}}
+  </style>
+</head>
+<body><main class="wrap">
+  <p class="muted">SIMULATED TOOLS · SANITIZED EVIDENCE · NO LIVE SIDE EFFECTS</p>
+  <h1>Agent defensive test report</h1>
+  <p>Run <code>{{ run_id }}</code> against {{ report.target.name }} / {{ report.target.model }}.</p>
+  <div class="grid">
+    <div class="card"><span class="muted">Release gate</span><h2 class="{{ 'pass' if report.summary.release_gate == 'PASS' else 'fail' }}">{{ report.summary.release_gate }}</h2></div>
+    <div class="card"><span class="muted">Pass rate</span><h2>{{ report.summary.pass_rate }}%</h2></div>
+    <div class="card"><span class="muted">Critical violations</span><h2>{{ report.summary.critical_violations }}</h2></div>
+    <div class="card"><span class="muted">Human review</span><h2>{{ report.summary.review_required_count }}</h2></div>
+  </div>
+  <div class="table"><table><thead><tr><th>Scenario</th><th>Category</th><th>Mutation</th><th>Status</th><th>Reason</th></tr></thead><tbody>
+  {% for item in report.results %}<tr><td>{{ item.scenario_id }}</td><td>{{ item.category }}</td><td>{{ item.mutation }}</td><td class="{{ 'pass' if item.status == 'PASS' else 'fail' }}">{{ item.status }}</td><td>{{ item.violations|join(', ') or 'No violation' }}</td></tr>{% endfor %}
+  </tbody></table></div>
+  <p class="muted">Raw transcripts and tool arguments are not persisted. This report is defensive test evidence, not certification.</p>
+</main></body></html>

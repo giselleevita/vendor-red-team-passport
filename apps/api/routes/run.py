@@ -5,10 +5,11 @@ from datetime import datetime, timezone
 from typing import Literal
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 
+from apps.api.assets import default_case_suite
 from apps.api.config import get_settings
 from apps.api.services.audit import log_audit_event
 from apps.api.services.auth import RequestContext, hash_subject, require_roles
@@ -32,6 +33,81 @@ class RunCreateRequest(BaseModel):
     )
     a9_mode: Literal["auto", "compat", "strict"] | None = Field(default=None)
     params: dict | None = Field(default=None, description="Optional generation params (temperature, max_tokens)")
+
+
+class AgentRunCreateRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    profile: str = Field(default="agent_defensive_demo", pattern=r"^[A-Za-z0-9][A-Za-z0-9_.-]{0,79}$")
+    model: str | None = Field(default=None, max_length=200)
+
+
+@router.post("/agent-runs")
+@limiter.limit("5/minute")
+def create_agent_run(
+    req: AgentRunCreateRequest,
+    request: Request,
+    background_tasks: BackgroundTasks,
+    ctx: RequestContext = Depends(require_roles("operator", "admin")),
+) -> dict[str, str]:
+    settings = get_settings()
+    try:
+        profile = load_profile(req.profile, allow_external_paths=False)
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail="agent profile not found") from exc
+    except (PermissionError, ValueError) as exc:
+        raise HTTPException(status_code=400, detail="invalid agent profile") from exc
+    target = profile.get("target")
+    if not isinstance(target, dict) or target.get("type") not in {
+        "scripted",
+        "openai-compatible-agent",
+        "http-json-app",
+    }:
+        raise HTTPException(status_code=422, detail="profile does not define a supported agent target")
+    suite_path = str(profile.get("scenario_suite_path") or "")
+    if not suite_path:
+        raise HTTPException(status_code=422, detail="profile does not define scenario_suite_path")
+    run_id = str(uuid.uuid4())
+    job_id = str(uuid.uuid4())
+    model = (req.model or "").strip() or str(profile.get("model") or settings.default_model)
+    create_job(
+        job_id,
+        {
+            "job_kind": "agent_scenarios",
+            "run_id": run_id,
+            "tenant_id": ctx.tenant_id,
+            "created_by": hash_subject(ctx.subject),
+            "model": model,
+            "profile": profile.get("name", ""),
+            "profile_ref": req.profile,
+            "suite_path": suite_path,
+            "attempt_count": 0,
+            "max_attempts": max(1, int(settings.run_job_max_attempts)),
+            "next_attempt_at": None,
+        },
+    )
+    mode = (settings.run_executor_mode or "inline").strip().lower()
+    if mode == "inline":
+        background_tasks.add_task(execute_job, job_id)
+    elif mode != "external":
+        raise HTTPException(status_code=500, detail="invalid run executor mode")
+    log_audit_event(
+        action="agent_run.queue",
+        result="allow",
+        actor=hash_subject(ctx.subject),
+        tenant_id=ctx.tenant_id,
+        resource=f"/runs/{run_id}",
+        detail=f"defensive agent run queued job_id={job_id} mode={mode}",
+        method=request.method,
+    )
+    return {
+        "run_id": run_id,
+        "job_id": job_id,
+        "job_url": f"/runs/jobs/{job_id}",
+        "report_json_url": f"/runs/{run_id}/artifacts/agent-report.json",
+        "report_html_url": f"/runs/{run_id}",
+        "evidence_url_prefix": f"/runs/{run_id}/cases/",
+    }
 
 
 @router.post("/runs")
@@ -71,7 +147,7 @@ def create_run(
         raise HTTPException(status_code=400, detail=str(e)) from e
 
     model = (req.model or "").strip() or (profile.get("model") if profile else "") or settings.default_model
-    suite_path = (profile.get("suite_path") if profile else "") or "data/cases/cases.v1.json"
+    suite_path = (profile.get("suite_path") if profile else "") or str(default_case_suite())
 
     only_classes = req.only_classes if req.only_classes is not None else (profile.get("only_classes") if profile else None)
     if only_classes == []:

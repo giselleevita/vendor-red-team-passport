@@ -5,14 +5,11 @@ import re
 from functools import lru_cache
 from pathlib import Path
 
-
-def _repo_root() -> Path:
-    # apps/api/services/profiles.py -> repo root is 3 parents up.
-    return Path(__file__).resolve().parents[3]
+from apps.api.assets import builtin_profile, builtin_profiles_dir, default_agent_suite, default_case_suite
 
 
 def profiles_dir() -> Path:
-    return _repo_root() / "profiles"
+    return builtin_profiles_dir()
 
 
 def _is_within(base: Path, target: Path) -> bool:
@@ -34,6 +31,15 @@ def _load_yaml(path: Path) -> dict:
     return data
 
 
+def _contains_secret_key(value: object) -> bool:
+    blocked = {"api_key", "token", "authorization", "password", "secret"}
+    if isinstance(value, dict):
+        return any(str(key).lower() in blocked or _contains_secret_key(item) for key, item in value.items())
+    if isinstance(value, list):
+        return any(_contains_secret_key(item) for item in value)
+    return False
+
+
 def load_profile(name_or_path: str, *, allow_external_paths: bool = True) -> dict:
     """
     Load a run profile from disk.
@@ -50,19 +56,13 @@ def load_profile(name_or_path: str, *, allow_external_paths: bool = True) -> dic
     if not allow_external_paths:
         if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]*", raw) or raw in {".", ".."}:
             raise ValueError("invalid profile name")
-        candidates = [base / f"{raw}.yaml", base / f"{raw}.yml", base / f"{raw}.json"]
-        path = next((c for c in candidates if c.exists()), None)
-        if path is None:
-            raise FileNotFoundError(f"profile not found: {raw} (looked in {base})")
+        path = builtin_profile(raw)
     else:
         p = Path(raw).expanduser()
         if p.exists():
             path = p.resolve()
         else:
-            candidates = [base / f"{raw}.yaml", base / f"{raw}.yml", base / f"{raw}.json"]
-            path = next((c for c in candidates if c.exists()), None)
-            if path is None:
-                raise FileNotFoundError(f"profile not found: {raw} (looked in {base})")
+            path = builtin_profile(raw)
 
     if not allow_external_paths and not _is_within(base, path):
         raise PermissionError(f"profile path outside allowed profiles directory: {path.resolve()}")
@@ -83,14 +83,26 @@ def load_profile(name_or_path: str, *, allow_external_paths: bool = True) -> dic
     if provider not in {"featherless", "openai-compatible"}:
         raise ValueError(f"unsupported profile provider: {provider}")
     data["provider"] = provider
-    if any(key.lower() in {"api_key", "token", "authorization"} for key in data):
+    if _contains_secret_key(data):
         raise ValueError("profiles cannot contain provider credentials")
 
     suite_path = (data.get("suite_path") or "").strip()
     if suite_path:
         sp = Path(suite_path)
         if not sp.is_absolute():
-            data["suite_path"] = str((_repo_root() / sp).resolve())
+            if sp.as_posix() == "data/cases/cases.v1.json":
+                data["suite_path"] = str(default_case_suite())
+            else:
+                data["suite_path"] = str((path.parent / sp).resolve())
+
+    scenario_suite_path = (data.get("scenario_suite_path") or "").strip()
+    if scenario_suite_path:
+        sp = Path(scenario_suite_path)
+        if not sp.is_absolute():
+            if sp.as_posix() == "data/scenarios/defensive.v1.json":
+                data["scenario_suite_path"] = str(default_agent_suite())
+            else:
+                data["scenario_suite_path"] = str((path.parent / sp).resolve())
 
     return data
 

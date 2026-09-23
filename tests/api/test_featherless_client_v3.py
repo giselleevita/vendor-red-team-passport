@@ -78,3 +78,13 @@ def test_capability_probes_are_conservative(monkeypatch) -> None:
 def test_missing_key_is_rejected() -> None:
     with pytest.raises(RuntimeError, match="FEATHERLESS_API_KEY"):
         FeatherlessClient(base_url="https://provider.example/v1", api_key="")
+
+
+def test_provider_response_size_is_bounded() -> None:
+    def handler(_request: httpx.Request) -> httpx.Response:
+        return httpx.Response(200, json={"choices": [{"message": {"content": "x" * 100}}]})
+
+    with _client(handler) as client:
+        client.max_response_bytes = 16
+        with pytest.raises(ValueError, match="byte limit"):
+            client.chat("prompt")

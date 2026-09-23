@@ -21,3 +21,13 @@ def test_explicit_external_profile_is_rejected_when_disabled(tmp_path: Path) -> 
 
     with pytest.raises(ValueError, match="invalid profile name"):
         load_profile(str(outside), allow_external_paths=False)
+
+
+def test_nested_profile_credentials_are_rejected(tmp_path: Path) -> None:
+    profile = tmp_path / "unsafe.yaml"
+    profile.write_text(
+        "provider: openai-compatible\ntarget:\n  type: http-json-app\n  api_key: must-not-be-here\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="credentials"):
+        load_profile(str(profile))
