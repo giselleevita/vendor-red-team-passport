@@ -5,6 +5,7 @@ import uuid
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException, Request
+from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from slowapi.errors import RateLimitExceeded
@@ -12,6 +13,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from apps.api.config import get_settings
 from apps.api.config_validation import validate_all
+from apps.api.routes.assurance import router as assurance_router
 from apps.api.routes.health import router as health_router
 from apps.api.routes.metrics import router as metrics_router
 from apps.api.routes.passport import router as passport_router
@@ -40,6 +42,7 @@ app = FastAPI(
 app.state.limiter = limiter
 
 app.include_router(health_router)
+app.include_router(assurance_router)
 app.include_router(run_router)
 app.include_router(passport_router)
 app.include_router(profiles_router)
@@ -166,7 +169,7 @@ async def handle_validation_error(request: Request, exc: RequestValidationError)
         status_code=422,
         message="request validation failed",
         correlation_id=cid,
-        detail=exc.errors(),
+        detail=jsonable_encoder(exc.errors()),
     )
     response = JSONResponse(status_code=422, content=body)
     response.headers["X-Correlation-ID"] = cid
