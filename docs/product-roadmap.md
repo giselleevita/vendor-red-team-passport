@@ -12,10 +12,11 @@ Vendor Red-Team Passport is becoming an open-core, local-first assurance product
 
 ## v0.5 — Application and agent testing
 
-- Multi-turn conversations and stateful attack scenarios.
-- Tool-call assertions, authorization-boundary checks, and indirect prompt-injection cases.
-- Target adapters for deployed applications, retrieval pipelines, and agents.
-- Reproduction bundles and remediation guidance tied to findings.
+- [x] Multi-turn conversations and stateful defensive scenarios.
+- [x] Simulated tool-call assertions, authorization boundaries, canaries, and indirect prompt injection.
+- [x] OpenAI-compatible agent and fixed-contract HTTP application adapters.
+- [x] Sanitized reproduction evidence with deterministic transport mutations.
+- [ ] Finding-specific remediation guidance and a dedicated browser workflow.
 
 ## v0.6 — Continuous assurance
 

@@ -35,6 +35,7 @@ _ALLOWED_RUN_ARTIFACTS = {
     "coverage.json",
     "compliance.json",
     "manifest.json",
+    "agent-report.json",
 }
 
 
@@ -79,6 +80,9 @@ def runs_list(
         meta = load_run_meta(run_id) or {}
         passport = load_passport(run_id)
         summary = passport.summary.model_dump() if passport else {}
+        if passport is None and meta.get("run_type") == "agent_scenarios":
+            agent_report = load_json_artifact(run_id, "agent-report.json") or {}
+            summary = agent_report.get("summary", {}) if isinstance(agent_report, dict) else {}
         prof = (meta.get("profile") or {}) if isinstance(meta.get("profile"), dict) else {}
         runs.append(
             {
@@ -89,8 +93,8 @@ def runs_list(
                 "enabled_case_count": meta.get("enabled_case_count", ""),
                 "only_classes": meta.get("only_classes", []),
                 "gate": summary.get("release_gate", ""),
-                "overall_score": summary.get("overall_score", ""),
-                "critical_failures": summary.get("critical_failures", ""),
+                "overall_score": summary.get("overall_score", summary.get("pass_rate", "")),
+                "critical_failures": summary.get("critical_failures", summary.get("critical_violations", "")),
             }
         )
 
@@ -113,11 +117,15 @@ def run_detail(
     ctx: RequestContext = Depends(require_roles("viewer", "auditor", "operator", "admin")),
 ) -> FileResponse:
     _require_run_access(run_id, ctx)
+    meta = load_run_meta(run_id) or {}
     try:
-        html_path = run_dir(run_id) / "passport.html"
+        filename = "agent-report.html" if meta.get("run_type") == "agent_scenarios" else "passport.html"
+        html_path = run_dir(run_id) / filename
     except ValueError as e:
         raise _bad_run_id(e) from e
     if html_path.exists():
+        if filename == "agent-report.html":
+            return FileResponse(html_path, media_type="text/html")
         try:
             cached = html_path.read_text(encoding="utf-8")
         except OSError:

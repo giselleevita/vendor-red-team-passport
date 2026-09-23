@@ -144,6 +144,14 @@ def validate_request_controls() -> None:
     settings = get_settings()
     if not 1024 <= settings.request_max_body_bytes <= 100 * 1024 * 1024:
         raise RuntimeError("REQUEST_MAX_BODY_BYTES must be between 1 KiB and 100 MiB.")
+    if not 1024 <= settings.provider_max_response_bytes <= 10 * 1024 * 1024:
+        raise RuntimeError("PROVIDER_MAX_RESPONSE_BYTES must be between 1 KiB and 10 MiB.")
+    if not 1 <= settings.agent_max_response_bytes <= settings.provider_max_response_bytes:
+        raise RuntimeError("AGENT_MAX_RESPONSE_BYTES must be positive and no larger than PROVIDER_MAX_RESPONSE_BYTES.")
+    if not 1 <= settings.agent_max_total_turns <= 1000:
+        raise RuntimeError("AGENT_MAX_TOTAL_TURNS must be between 1 and 1000.")
+    if not 0 <= settings.agent_max_total_tool_calls <= 1000:
+        raise RuntimeError("AGENT_MAX_TOTAL_TOOL_CALLS must be between 0 and 1000.")
     scheme = urlparse(settings.rate_limit_storage_uri).scheme
     if scheme not in {"memory", "redis", "rediss"}:
         raise RuntimeError("RATE_LIMIT_STORAGE_URI must use memory://, redis://, or rediss://.")

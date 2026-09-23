@@ -5,7 +5,9 @@ import json
 import os
 from pathlib import Path
 
+from apps.api.assets import default_agent_suite, default_case_suite
 from apps.api.config import get_settings
+from apps.api.services.agent_orchestrator import run_agent_scenarios
 from apps.api.services.audit_verify import verify_audit_log
 from apps.api.services.manifest import verify_manifest
 from apps.api.services.orchestrator import run_orchestrated
@@ -17,7 +19,7 @@ def _run(args: argparse.Namespace) -> int:
     profile = load_profile(args.profile) if args.profile else None
     settings = get_settings()
     model = args.model or (profile.get("model") if profile else "") or settings.default_model
-    suite = args.suite or (profile.get("suite_path") if profile else "") or "data/cases/cases.v1.json"
+    suite = args.suite or (profile.get("suite_path") if profile else "") or default_case_suite()
     run_id = run_orchestrated(
         model=model,
         only_classes=args.only_classes or (profile.get("only_classes") if profile else None),
@@ -40,13 +42,28 @@ def _benchmark(args: argparse.Namespace) -> int:
             only_classes=args.only_classes or (profile.get("only_classes") if profile else None),
             a9_mode=(profile.get("a9_mode") if profile else "auto") or "auto",
             params=profile.get("params") if profile else None,
-            suite_path=args.suite or (profile.get("suite_path") if profile else "data/cases/cases.v1.json"),
+            suite_path=args.suite or (profile.get("suite_path") if profile else default_case_suite()),
             profile=profile,
         )
         passport = load_passport(run_id)
         results.append({"model": model, "run_id": run_id, "summary": passport.summary.model_dump() if passport else {}})
     Path(args.out).parent.mkdir(parents=True, exist_ok=True)
     Path(args.out).write_text(json.dumps({"results": results}, indent=2) + "\n", encoding="utf-8")
+    return 0
+
+
+def _agent_test(args: argparse.Namespace) -> int:
+    profile = load_profile(args.profile)
+    settings = get_settings()
+    model = args.model or profile.get("model") or settings.default_model
+    suite = args.suite or profile.get("scenario_suite_path") or default_agent_suite()
+    run_id = run_agent_scenarios(
+        profile=profile,
+        model=str(model),
+        suite_path=str(suite),
+        run_id=args.run_id or None,
+    )
+    print(json.dumps({"run_id": run_id, "report": str(run_dir(run_id) / "agent-report.html")}, indent=2))
     return 0
 
 
@@ -83,6 +100,13 @@ def _parser() -> argparse.ArgumentParser:
     benchmark.add_argument("--only-classes", nargs="*", default=[])
     benchmark.add_argument("--out", default="reports/benchmarks/benchmark.latest.json")
     benchmark.set_defaults(handler=_benchmark)
+
+    agent = commands.add_parser("agent-test")
+    agent.add_argument("--profile", default="agent_defensive_demo")
+    agent.add_argument("--model", default="")
+    agent.add_argument("--suite", default="")
+    agent.add_argument("--run-id", default="")
+    agent.set_defaults(handler=_agent_test)
 
     manifest = commands.add_parser("verify-manifest")
     manifest.add_argument("--run-id", default="")

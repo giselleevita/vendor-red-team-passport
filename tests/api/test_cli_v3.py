@@ -11,6 +11,7 @@ def test_parser_exposes_all_packaged_commands() -> None:
     parser = cli._parser()
     assert parser.parse_args(["run", "--model", "target"]).command == "run"
     assert parser.parse_args(["benchmark", "--models", "a", "b"]).models == ["a", "b"]
+    assert parser.parse_args(["agent-test"]).profile == "agent_defensive_demo"
     assert parser.parse_args(["verify-manifest", "--run-id", "run-1"]).run_id == "run-1"
     parsed_audit = parser.parse_args(["verify-audit", "--secret", "fixture-value"])
     assert vars(parsed_audit)["secret"] == "fixture-value"  # noqa: S105 -- CLI fixture
@@ -44,6 +45,24 @@ def test_benchmark_writes_summaries(monkeypatch, tmp_path) -> None:
     args = argparse.Namespace(models=["a", "b"], profile="", suite="suite.json", only_classes=[], out=str(output))
     assert cli._benchmark(args) == 0
     assert [row["run_id"] for row in json.loads(output.read_text())["results"]] == ["run-a", "run-b"]
+
+
+def test_agent_test_command_uses_profile_and_prints_report(monkeypatch, tmp_path, capsys) -> None:
+    profile = {"model": "agent-model", "scenario_suite_path": "suite.json"}
+    monkeypatch.setattr(cli, "load_profile", lambda _name: profile)
+    monkeypatch.setattr(cli, "get_settings", lambda: SimpleNamespace(default_model="default"))
+    captured = {}
+
+    def run_agent_scenarios(**kwargs):
+        captured.update(kwargs)
+        return "agent-run-1"
+
+    monkeypatch.setattr(cli, "run_agent_scenarios", run_agent_scenarios)
+    monkeypatch.setattr(cli, "run_dir", lambda _run_id: tmp_path)
+    args = argparse.Namespace(profile="agent", model="", suite="", run_id="")
+    assert cli._agent_test(args) == 0
+    assert captured["model"] == "agent-model"
+    assert json.loads(capsys.readouterr().out)["run_id"] == "agent-run-1"
 
 
 def test_verify_manifest_and_audit_commands(monkeypatch, tmp_path, capsys) -> None:

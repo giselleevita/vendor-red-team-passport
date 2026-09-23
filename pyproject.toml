@@ -54,4 +54,12 @@ ignore = ["B008"]
 include-package-data = true
 
 [tool.setuptools.packages.find]
-include = ["apps*"]
+include = ["apps*", "data*", "profiles*"]
+
+[tool.setuptools.package-data]
+"apps.api" = ["templates/*.j2"]
+"data" = ["*.json"]
+"data.cases" = ["*.json"]
+"data.compliance" = ["*.yaml"]
+"data.scenarios" = ["*.json"]
+"profiles" = ["*.yaml", "*.yml", "*.json"]

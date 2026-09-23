@@ -21,7 +21,7 @@ class ModelProvider(Protocol):
     def supports_a9_risk_verdict_schema(self, model: str | None = None) -> bool: ...
 
 
-def _validated_endpoint(value: str) -> str:
+def validated_endpoint(value: str) -> str:
     parsed = urlparse(value)
     local = parsed.hostname in {"localhost", "127.0.0.1", "::1"}
     if parsed.scheme != "https" and not (parsed.scheme == "http" and local):
@@ -37,7 +37,7 @@ def create_provider(profile: dict | None = None) -> ModelProvider:
     provider = str(profile.get("provider") or "featherless").strip().lower()
     if provider not in {"featherless", "openai-compatible"}:
         raise ValueError(f"unsupported provider adapter: {provider}")
-    endpoint = _validated_endpoint(str(profile.get("base_url") or settings.featherless_base_url).strip())
+    endpoint = validated_endpoint(str(profile.get("base_url") or settings.featherless_base_url).strip())
     key = settings.featherless_api_key if provider == "featherless" else settings.target_api_key
     if not key:
         variable = "FEATHERLESS_API_KEY" if provider == "featherless" else "TARGET_API_KEY"

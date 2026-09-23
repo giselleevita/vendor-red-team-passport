@@ -45,6 +45,36 @@ def test_job_status_is_tenant_scoped(auth_header, monkeypatch, tmp_path: Path) -
     assert denied.status_code == 404
 
 
+def test_create_agent_run_is_typed_queued_and_tenant_scoped(auth_header, monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setenv("VENDOR_RTP_REPORTS_DIR", str(tmp_path / "reports"))
+    monkeypatch.setenv("RUN_EXECUTOR_MODE", "external")
+    get_settings.cache_clear()
+    get_job_store.cache_clear()
+    client = TestClient(app)
+
+    invalid = client.post(
+        "/agent-runs",
+        json={"profile": "agent_defensive_demo", "unexpected": True},
+        headers=auth_header(roles=["operator"]),
+    )
+    assert invalid.status_code == 422
+
+    created = client.post(
+        "/agent-runs",
+        json={"profile": "agent_defensive_demo"},
+        headers=auth_header(tenant_id="tenant-a", roles=["operator"]),
+    )
+    assert created.status_code == 200
+    body = created.json()
+    job = load_job(body["job_id"])
+    assert job is not None
+    assert job["job_kind"] == "agent_scenarios"
+    assert job["tenant_id"] == "tenant-a"
+    assert body["report_json_url"].endswith("/agent-report.json")
+    hidden = client.get(body["job_url"], headers=auth_header(tenant_id="tenant-b", roles=["viewer"]))
+    assert hidden.status_code == 404
+
+
 def test_execute_job_marks_success(monkeypatch, tmp_path: Path) -> None:
     import apps.api.services.job_executor as job_exec
 
@@ -72,6 +102,36 @@ def test_execute_job_marks_success(monkeypatch, tmp_path: Path) -> None:
     assert after["status"] == "succeeded"
     loaded = load_job("job-worker-1")
     assert loaded is not None and loaded["status"] == "succeeded"
+
+
+def test_execute_agent_job_dispatches_to_defensive_runner(monkeypatch, tmp_path: Path) -> None:
+    import apps.api.services.job_executor as job_exec
+
+    monkeypatch.setenv("VENDOR_RTP_REPORTS_DIR", str(tmp_path / "reports"))
+    get_settings.cache_clear()
+    get_job_store.cache_clear()
+    captured = {}
+
+    def _fake_agent_run(**kwargs):
+        captured.update(kwargs)
+        return kwargs["run_id"]
+
+    monkeypatch.setattr(job_exec, "run_agent_scenarios", _fake_agent_run)
+    create_job(
+        "job-agent-worker",
+        {
+            "job_kind": "agent_scenarios",
+            "run_id": "run-agent-worker",
+            "tenant_id": "tenant-a",
+            "profile_ref": "agent_defensive_demo",
+            "model": "synthetic-agent",
+            "suite_path": "data/scenarios/defensive.v1.json",
+        },
+    )
+    after = execute_job("job-agent-worker")
+    assert after["status"] == "succeeded"
+    assert captured["tenant_id"] == "tenant-a"
+    assert captured["profile"]["target"]["type"] == "scripted"
 
 
 def test_execute_job_requeues_on_failure_before_max_attempts(monkeypatch, tmp_path: Path) -> None:

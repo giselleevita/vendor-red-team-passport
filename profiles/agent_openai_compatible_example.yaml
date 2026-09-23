@@ -1,0 +1,8 @@
+name: agent_openai_compatible_example
+description: Defensive test profile for an authorized OpenAI-compatible tool-using agent
+provider: openai-compatible
+base_url: https://authorized-agent.example/v1
+model: replace-with-model-id
+scenario_suite_path: data/scenarios/defensive.v1.json
+target:
+  type: openai-compatible-agent

@@ -8,6 +8,7 @@ from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
+from apps.api.assets import default_case_suite
 from apps.api.config import get_settings
 from apps.api.schemas.passport import Passport
 from apps.api.services.compliance_mapper import map_compliance
@@ -54,7 +55,7 @@ def run_orchestrated(
     params: dict | None = None,
     tenant_id: str | None = None,
     run_id: str | None = None,
-    suite_path: str | Path = "data/cases/cases.v1.json",
+    suite_path: str | Path | None = None,
     profile: dict | None = None,
 ) -> str:
     """
@@ -64,7 +65,7 @@ def run_orchestrated(
     run_id = run_id or str(uuid.uuid4())
     settings = get_settings()
     tenant_id = (tenant_id or "").strip() or settings.auth_default_tenant_id
-    suite_path = Path(suite_path)
+    suite_path = Path(suite_path or default_case_suite())
     suite = load_case_suite(suite_path)
 
     with ExitStack() as stack:
