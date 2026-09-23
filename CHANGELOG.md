@@ -2,7 +2,9 @@
 
 ## Unreleased
 
-### Application and agent testing (v0.5 development)
+## v0.5.0 - 2026-09-23
+
+### Application and agent testing
 
 - Add bounded multi-turn scenarios for indirect prompt injection, tool authorization, argument validation, synthetic canary disclosure, and resource control.
 - Add OpenAI-compatible agent, fixed-contract HTTP application, and offline scripted target adapters.
@@ -10,7 +12,7 @@
 - Add `vendor-rtp agent-test`, `POST /agent-runs`, sanitized reports, evidence hashes, and manifest verification.
 - Reject nested credentials, remote JSON Schema references, unknown request fields, unsafe target paths, oversized responses, and over-budget runs.
 
-### Vendor assurance workflow (v0.4 development)
+### Vendor assurance workflow
 
 #### Added
 

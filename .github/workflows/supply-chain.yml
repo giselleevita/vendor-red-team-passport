@@ -40,7 +40,7 @@ jobs:
       - name: Upload release evidence
         uses: actions/upload-artifact@v6
         with:
-          name: v0.3-supply-chain-evidence
+          name: ${{ github.event.release.tag_name || 'manual' }}-supply-chain-evidence
           path: |
             dist/*.whl
             sbom.cdx.json
