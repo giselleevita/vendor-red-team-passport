@@ -2,6 +2,22 @@
 
 ## Unreleased
 
+## v0.5.1 - 2026-09-23
+
+### Added
+
+- Finding-specific control, implementation, and retest guidance for defensive agent results.
+- A CSP-compatible browser launcher for model and agent runs with bounded status polling.
+- Side-by-side comparison for two to six model runs.
+- A reproducible blinded independent-review kit with strict two-reviewer ingestion.
+- A pinned full-history secret scan required by branch protection.
+
+### Security
+
+- Reject unknown and over-budget generation parameters through strict typed request models.
+- Keep browser behavior in packaged same-origin JavaScript instead of weakening the content security policy.
+- Keep independent accuracy explicitly pending until complete human reviews and adjudication exist.
+
 ## v0.5.0 - 2026-09-23
 
 ### Application and agent testing

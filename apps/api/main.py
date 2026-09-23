@@ -35,7 +35,7 @@ async def lifespan(_app: FastAPI):
 
 app = FastAPI(
     title="AI Vendor Red-Team Passport API",
-    version="0.5.0",
+    version="0.5.1",
     docs_url=None,
     redoc_url=None,
     openapi_url=None,
