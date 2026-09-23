@@ -25,14 +25,23 @@ def _utc_now_iso() -> str:
     return datetime.now(tz=timezone.utc).isoformat()
 
 
+class GenerationParams(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    temperature: float | None = Field(default=None, ge=0, le=2)
+    max_tokens: int | None = Field(default=None, ge=1, le=1024)
+
+
 class RunCreateRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     profile: str | None = Field(default=None, description="Run profile name or path (e.g. quick_gates, full_suite)")
     model: str | None = Field(default=None, description="Featherless model name")
     only_classes: list[str] | None = Field(
         default=None, description="If set, run only these attack classes (e.g. ['A4','A5','A6','A9'])."
     )
     a9_mode: Literal["auto", "compat", "strict"] | None = Field(default=None)
-    params: dict | None = Field(default=None, description="Optional generation params (temperature, max_tokens)")
+    params: GenerationParams | None = Field(default=None, description="Optional bounded generation parameters")
 
 
 class AgentRunCreateRequest(BaseModel):
@@ -154,7 +163,7 @@ def create_run(
         only_classes = None
 
     a9_mode = req.a9_mode if req.a9_mode is not None else (profile.get("a9_mode") if profile else "auto")
-    params = req.params if req.params is not None else (profile.get("params") if profile else None)
+    params = req.params.model_dump(exclude_none=True) if req.params is not None else (profile.get("params") if profile else None)
 
     if params is not None:
         allowed = {"temperature", "max_tokens"}

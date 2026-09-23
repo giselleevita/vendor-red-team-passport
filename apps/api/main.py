@@ -3,11 +3,13 @@ from __future__ import annotations
 import time
 import uuid
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 from slowapi.errors import RateLimitExceeded
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
@@ -40,6 +42,7 @@ app = FastAPI(
     lifespan=lifespan,
 )
 app.state.limiter = limiter
+app.mount("/static", StaticFiles(directory=str(Path(__file__).resolve().parent / "static")), name="static")
 
 app.include_router(health_router)
 app.include_router(assurance_router)

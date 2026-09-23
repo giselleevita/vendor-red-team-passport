@@ -38,21 +38,32 @@ def test_ui_landing_list_claims_and_comparison(tmp_path, monkeypatch, auth_heade
     monkeypatch.setenv("VENDOR_RTP_REPORTS_DIR", str(tmp_path / "reports"))
     _seed("2026-a", "tenant", 80)
     _seed("2026-b", "tenant", 90)
+    _seed("2026-c", "tenant", 85)
     headers = auth_header(tenant_id="tenant", roles=["viewer"])
     client = TestClient(app)
-    assert client.get("/", headers=headers).status_code == 200
+    landing = client.get("/", headers=headers)
+    assert landing.status_code == 200
+    assert "Run defensive scenarios" in landing.text
+    assert '<script src="/static/app.js" defer></script>' in landing.text
+    assert client.get("/static/app.js").status_code == 200
     runs = client.get("/runs", headers=headers)
     assert runs.status_code == 200 and "2026-a" in runs.text and "2026-b" in runs.text
     assert client.get("/runs/2026-a/claims", headers=headers).status_code == 200
     assert client.get("/compare", headers=headers).status_code == 200
     one = client.get("/compare", params=[("run_id", "2026-a")], headers=headers)
-    assert one.status_code == 200 and "exactly two" in one.text
+    assert one.status_code == 200 and "at least two" in one.text
     missing = client.get("/compare", params=[("run_id", "2026-a"), ("run_id", "missing")], headers=headers)
     assert missing.status_code == 200 and "not found" in missing.text
     compared = client.get(
         "/compare", params=[("run_id", "2026-a"), ("run_id", "2026-b")], headers=headers
     )
     assert compared.status_code == 200 and "model-2026-a" in compared.text and "model-2026-b" in compared.text
+    multi = client.get(
+        "/compare",
+        params=[("run_id", "2026-a"), ("run_id", "2026-b"), ("run_id", "2026-c")],
+        headers=headers,
+    )
+    assert multi.status_code == 200 and "model-2026-c" in multi.text
 
 
 def test_ui_artifact_and_evidence_errors(tmp_path, monkeypatch, auth_header) -> None:

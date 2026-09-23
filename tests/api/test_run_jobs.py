@@ -75,6 +75,19 @@ def test_create_agent_run_is_typed_queued_and_tenant_scoped(auth_header, monkeyp
     assert hidden.status_code == 404
 
 
+def test_create_run_rejects_unknown_and_over_budget_parameters(auth_header, monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setenv("VENDOR_RTP_REPORTS_DIR", str(tmp_path / "reports"))
+    monkeypatch.setenv("RUN_EXECUTOR_MODE", "external")
+    get_settings.cache_clear()
+    get_job_store.cache_clear()
+    client = TestClient(app)
+    headers = auth_header(tenant_id="tenant-a", roles=["operator"])
+
+    assert client.post("/runs", headers=headers, json={"params": {"top_p": 0.9}}).status_code == 422
+    assert client.post("/runs", headers=headers, json={"params": {"max_tokens": 1025}}).status_code == 422
+    assert client.post("/runs", headers=headers, json={"unexpected": True}).status_code == 422
+
+
 def test_execute_job_marks_success(monkeypatch, tmp_path: Path) -> None:
     import apps.api.services.job_executor as job_exec
 

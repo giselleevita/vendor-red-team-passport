@@ -83,6 +83,7 @@ def run_agent_scenarios(
                         "status": result.status,
                         "passed": result.passed,
                         "violations": result.violations,
+                        "remediation": result.remediation,
                         "response_excerpt_sanitized": result.response_excerpt,
                         "tool_calls": [item.model_dump(mode="json") for item in result.tool_calls],
                         "needs_human_review": result.needs_human_review,

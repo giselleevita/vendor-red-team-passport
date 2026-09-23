@@ -17,6 +17,7 @@ from apps.api.schemas.scenario import (
 from apps.api.services.agent_targets import AgentTarget
 from apps.api.services.evaluator import REFUSAL_MARKERS, _normalize_text
 from apps.api.services.redaction import sanitize_text
+from apps.api.services.remediation import remediation_for
 
 
 def load_scenario_suite(path: str | Path) -> AgentScenarioSuite:
@@ -148,6 +149,7 @@ def evaluate_scenario(
             status=status,
             passed=status == "PASS",
             violations=violations,
+            remediation=remediation_for(violations),
             response_excerpt=sanitize_text(responses[-1] if responses else "", limit=240),
             tool_calls=evidence,
             latency_ms=int((time.perf_counter() - started) * 1000),
@@ -161,6 +163,7 @@ def evaluate_scenario(
             status="ERROR",
             passed=False,
             violations=["scenario_execution_error"],
+            remediation=remediation_for(["scenario_execution_error"]),
             response_excerpt="",
             tool_calls=evidence,
             latency_ms=int((time.perf_counter() - started) * 1000),
@@ -188,4 +191,3 @@ def summarize_agent_results(results: list[AgentScenarioResult]) -> dict:
         "critical_violations": critical_violations,
         "release_gate": "PASS" if total and passed == total else "FAIL",
     }
-
