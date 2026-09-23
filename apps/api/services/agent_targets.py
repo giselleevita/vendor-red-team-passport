@@ -97,7 +97,7 @@ class HttpJsonAppTarget:
         self.base_url = validated_endpoint(base_url)
         self.url = urljoin(f"{self.base_url}/", path.lstrip("/"))
         self.target_name = "http-json-app"
-        headers = {"User-Agent": "vendor-red-team-passport/0.5.0"}
+        headers = {"User-Agent": "vendor-red-team-passport/0.5.1"}
         if api_key:
             headers["Authorization"] = f"Bearer {api_key}"
         settings = get_settings()

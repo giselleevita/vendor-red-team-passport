@@ -60,7 +60,7 @@ class SemanticJudge:
             timeout=settings.judge_timeout_seconds,
             headers={
                 "Authorization": f"Bearer {settings.judge_api_key}",
-                "User-Agent": "vendor-red-team-passport-judge/0.5.0",
+                "User-Agent": "vendor-red-team-passport-judge/0.5.1",
             },
             limits=httpx.Limits(max_connections=2, max_keepalive_connections=2),
         )
