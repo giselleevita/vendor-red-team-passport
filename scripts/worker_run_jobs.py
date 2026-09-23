@@ -12,6 +12,7 @@ if str(ROOT) not in sys.path:
 
 from apps.api.services.job_executor import execute_job
 from apps.api.services.jobs import list_jobs
+from apps.api.services.operations import process_due_deliveries, process_due_schedules, process_expired_approvals
 
 
 def _is_ready(job: dict) -> bool:
@@ -28,6 +29,9 @@ def _is_ready(job: dict) -> bool:
 
 
 def run_once(limit: int) -> int:
+    scheduled = process_due_schedules(limit=limit)
+    expired = process_expired_approvals()
+    delivered = process_due_deliveries(limit=limit)
     queued = list_jobs(status="queued", limit=limit)
     processed = 0
     for job in queued:
@@ -38,7 +42,7 @@ def run_once(limit: int) -> int:
             continue
         execute_job(job_id)
         processed += 1
-    return processed
+    return processed + scheduled + expired + delivered
 
 
 def main() -> None:

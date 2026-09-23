@@ -49,6 +49,7 @@ class Settings(BaseSettings):
     agent_max_response_bytes: int = 256 * 1024
     agent_max_total_turns: int = 64
     agent_max_total_tool_calls: int = 64
+    webhook_allowed_hosts: str = ""
 
 
 @lru_cache(maxsize=1)
