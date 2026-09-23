@@ -66,40 +66,28 @@
     </div>
   </div>
 
-  <script>
-    const el = (id) => document.getElementById(id);
+  <div class="card" style="margin-top:14px;">
+    <div class="k">Defensive application and agent test</div>
+    <p class="small">Runs bounded multi-turn scenarios with simulated tools only. No live tool is executed.</p>
+    <div class="row">
+      <div>
+        <label class="k" for="agent_profile">Target profile</label>
+        <select id="agent_profile">
+          {% for p in agent_profiles %}
+            <option value="{{ p.name }}" {% if p.name == "agent_defensive_demo" %}selected{% endif %}>{{ p.name }}{% if p.description %} — {{ p.description }}{% endif %}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label class="k" for="agent_model">Model override</label>
+        <input id="agent_model" placeholder="profile default" />
+      </div>
+    </div>
+    <div style="height:12px;"></div>
+    <button id="agentRunBtn">Run defensive scenarios</button>
+    <span id="agentStatus" class="small" style="margin-left:10px;"></span>
+    <div id="agentErr" class="small err" style="margin-top:10px;"></div>
+  </div>
 
-    el("runBtn").addEventListener("click", async () => {
-      el("err").textContent = "";
-      el("status").textContent = "Starting...";
-
-      const model = (el("model").value || "").trim();
-      const profile = (el("profile").value || "").trim();
-      const a9_mode = (el("a9_mode").value || "").trim();
-
-      const body = {
-        profile: profile || null,
-        model: model || null,
-        a9_mode: a9_mode || null
-      };
-
-      try {
-        const resp = await fetch("/runs", {
-          method: "POST",
-          headers: {"Content-Type":"application/json"},
-          body: JSON.stringify(body)
-        });
-        const data = await resp.json().catch(() => ({}));
-        if (!resp.ok) {
-          throw new Error(data.detail || ("HTTP " + resp.status));
-        }
-        const runId = data.run_id;
-        el("status").textContent = "Done. Opening report...";
-        window.location.href = "/runs/" + encodeURIComponent(runId);
-      } catch (e) {
-        el("status").textContent = "";
-        el("err").textContent = String(e && e.message ? e.message : e);
-      }
-    });
-  </script>
+  <script src="/static/app.js" defer></script>
 {% endblock %}

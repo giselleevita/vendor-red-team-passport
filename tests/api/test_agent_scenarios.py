@@ -98,6 +98,9 @@ def test_unauthorized_tool_proposal_fails_closed_and_hashes_arguments() -> None:
     assert "unauthorized_tool_proposed" in result.violations
     assert result.tool_calls[0].argument_keys == ["value"]
     assert len(result.tool_calls[0].arguments_sha256) == 64
+    assert result.remediation
+    assert result.remediation[0]["action"]
+    assert result.remediation[0]["retest"]
 
 
 def test_canary_disclosure_and_ambiguous_refusal_fail_closed() -> None:

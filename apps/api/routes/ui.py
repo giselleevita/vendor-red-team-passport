@@ -59,13 +59,15 @@ def landing(
 ) -> HTMLResponse:
     _ = ctx
     settings = get_settings()
+    profiles = list_profiles()
     return templates.TemplateResponse(
         request,
         "index.html.j2",
         {
             "request": request,
             "default_model": settings.default_model,
-            "profiles": list_profiles(),
+            "profiles": [item for item in profiles if not str(item.get("name", "")).startswith("agent_")],
+            "agent_profiles": [item for item in profiles if str(item.get("name", "")).startswith("agent_")],
         },
     )
 
@@ -224,7 +226,7 @@ def compare_runs(
     ctx: RequestContext = Depends(require_roles("viewer", "auditor", "operator", "admin")),
 ) -> HTMLResponse:
     available = list_run_ids_for_tenant(ctx.tenant_id)[::-1]
-    selected = run_id[:2] if run_id else []
+    selected = list(dict.fromkeys(run_id))[:6] if run_id else []
 
     if len(selected) == 0:
         return templates.TemplateResponse(
@@ -233,20 +235,19 @@ def compare_runs(
             {"request": request, "available": available, "error": "", "comparison": None},
         )
 
-    if len(selected) != 2:
+    if len(selected) < 2:
         return templates.TemplateResponse(
             request,
             "compare.html.j2",
             {
                 "request": request,
                 "available": available,
-                "error": "Please provide exactly two run_id query params, e.g. /compare?run_id=a&run_id=b",
+                "error": "Please select at least two runs (up to six).",
                 "comparison": None,
             },
         )
 
-    a, b = selected
-    if not run_accessible_by_tenant(a, ctx.tenant_id) or not run_accessible_by_tenant(b, ctx.tenant_id):
+    if any(not run_accessible_by_tenant(item, ctx.tenant_id) for item in selected):
         return templates.TemplateResponse(
             request,
             "compare.html.j2",
@@ -258,8 +259,7 @@ def compare_runs(
             },
         )
     try:
-        pa = load_passport(a)
-        pb = load_passport(b)
+        passports = [load_passport(item) for item in selected]
     except ValueError:
         return templates.TemplateResponse(
             request,
@@ -271,7 +271,7 @@ def compare_runs(
                 "comparison": None,
             },
         )
-    if pa is None or pb is None:
+    if any(passport is None for passport in passports):
         return templates.TemplateResponse(
             request,
             "compare.html.j2",
@@ -283,6 +283,24 @@ def compare_runs(
             },
         )
 
+    typed_passports = [passport for passport in passports if passport is not None]
+    run_views = []
+    for selected_id, passport in zip(selected, typed_passports, strict=True):
+        meta = load_run_meta(selected_id) or {}
+        run_views.append(
+            {
+                "run_id": selected_id,
+                "model": meta.get("model", ""),
+                "profile": (meta.get("profile") or {}).get("name", "")
+                if isinstance(meta.get("profile"), dict)
+                else meta.get("profile", ""),
+                "created_at_utc": meta.get("created_at_utc", ""),
+                "summary": passport.summary.model_dump(),
+            }
+        )
+
+    a, b = selected[:2]
+    pa, pb = typed_passports[:2]
     ma = load_run_meta(a) or {}
     mb = load_run_meta(b) or {}
 
@@ -324,6 +342,7 @@ def compare_runs(
         )
 
     comparison = {
+        "runs": run_views,
         "a": {"run_id": a, "model": ma.get("model", ""), "created_at_utc": ma.get("created_at_utc", ""), "summary": sa},
         "b": {"run_id": b, "model": mb.get("model", ""), "created_at_utc": mb.get("created_at_utc", ""), "summary": sb},
         "summary_deltas": [

@@ -16,14 +16,14 @@ Vendor Red-Team Passport is becoming an open-core, local-first assurance product
 - [x] Simulated tool-call assertions, authorization boundaries, canaries, and indirect prompt injection.
 - [x] OpenAI-compatible agent and fixed-contract HTTP application adapters.
 - [x] Sanitized reproduction evidence with deterministic transport mutations.
-- [ ] Finding-specific remediation guidance and a dedicated browser workflow.
+- [x] Finding-specific remediation guidance and a dedicated browser workflow.
 
 ## v0.6 — Continuous assurance
 
-- Versioned baselines, drift detection, scheduled re-evaluation, and expiring approvals.
-- Policy-as-code gates by risk tier and data classification.
-- Webhooks and issue-tracker integrations for findings and review deadlines.
-- Portfolio views across vendors, systems, models, and unresolved conditions.
+- [ ] Versioned baselines, drift detection, scheduled re-evaluation, and expiring approvals.
+- [ ] Policy-as-code gates by risk tier and data classification.
+- [ ] Webhooks and issue-tracker integrations for findings and review deadlines.
+- [ ] Portfolio views across vendors, systems, models, and unresolved conditions.
 
 ## v1.0 — Enterprise collaboration
 

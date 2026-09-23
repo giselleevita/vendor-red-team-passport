@@ -57,7 +57,7 @@ include-package-data = true
 include = ["apps*", "data*", "profiles*"]
 
 [tool.setuptools.package-data]
-"apps.api" = ["templates/*.j2"]
+"apps.api" = ["templates/*.j2", "static/*.js"]
 "data" = ["*.json"]
 "data.cases" = ["*.json"]
 "data.compliance" = ["*.yaml"]

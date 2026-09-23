@@ -148,6 +148,7 @@ class AgentScenarioResult(StrictModel):
     status: Literal["PASS", "FAIL", "UNCERTAIN", "ERROR"]
     passed: bool
     violations: list[str] = Field(default_factory=list)
+    remediation: list[dict[str, str]] = Field(default_factory=list)
     response_excerpt: str = ""
     tool_calls: list[ToolCallEvidence] = Field(default_factory=list)
     latency_ms: int

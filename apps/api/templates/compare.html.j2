@@ -9,27 +9,13 @@
   </div>
 
   <div class="card" style="margin-top:14px;">
-    <div class="k">Pick two run IDs</div>
+    <div class="k">Pick two to six run IDs</div>
     <div style="height:10px;"></div>
     <form method="get" action="/compare">
-      <div class="row">
-        <div>
-          <label class="k" for="run_a">Run A</label>
-          <select id="run_a" name="run_id">
-            {% for r in available %}
-              <option value="{{ r }}">{{ r }}</option>
-            {% endfor %}
-          </select>
-        </div>
-        <div>
-          <label class="k" for="run_b">Run B</label>
-          <select id="run_b" name="run_id">
-            {% for r in available %}
-              <option value="{{ r }}">{{ r }}</option>
-            {% endfor %}
-          </select>
-        </div>
-      </div>
+      <label class="k" for="run_ids">Runs (hold Ctrl/Cmd to select multiple)</label>
+      <select id="run_ids" name="run_id" multiple size="{{ 8 if available|length > 8 else available|length }}">
+        {% for r in available %}<option value="{{ r }}">{{ r }}</option>{% endfor %}
+      </select>
       <div style="height:12px;"></div>
       <button type="submit">Compare</button>
       {% if error %}
@@ -40,6 +26,12 @@
   </div>
 
   {% if comparison %}
+    <div class="card" style="margin-top:14px;">
+      <div class="k">Selected run summary</div>
+      <table><thead><tr><th>Run</th><th>Model</th><th>Profile</th><th>Gate</th><th>Overall</th><th>Critical</th></tr></thead><tbody>
+      {% for run in comparison.runs %}<tr><td><a href="/runs/{{ run.run_id }}">{{ run.run_id }}</a></td><td>{{ run.model }}</td><td>{{ run.profile }}</td><td><span class="pill {{ 'ok' if run.summary.release_gate == 'PASS' else 'bad' }}">{{ run.summary.release_gate }}</span></td><td>{{ run.summary.overall_score }}</td><td>{{ run.summary.critical_failures }}</td></tr>{% endfor %}
+      </tbody></table>
+    </div>
     <div class="row" style="margin-top:14px;">
       <div class="card">
         <div class="k">Run A</div>
@@ -115,4 +107,3 @@
     </div>
   {% endif %}
 {% endblock %}
-

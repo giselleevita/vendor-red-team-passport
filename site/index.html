@@ -20,7 +20,7 @@
 </head>
 <body>
 <div class="wrap">
-  <nav class="nav"><div class="brand">VENDOR RED-TEAM PASSPORT <span class="tag">v0.4 preview</span></div><div class="nav-links"><a href="passport.json">Passport JSON</a> · <a href="assurance.json">Assurance JSON</a> · <a href="https://github.com/giselleevita/vendor-red-team-passport">Source</a></div></nav>
+  <nav class="nav"><div class="brand">VENDOR RED-TEAM PASSPORT <span class="tag">v0.5</span></div><div class="nav-links"><a href="passport.json">Passport JSON</a> · <a href="assurance.json">Assurance JSON</a> · <a href="https://github.com/giselleevita/vendor-red-team-passport">Source</a></div></nav>
   <header class="hero">
     <div><span class="tag">Synthetic safe demonstration</span><h1>Vendor safety evidence that can survive review.</h1><p class="lead">A versioned LLM evaluation pipeline that separates deterministic evidence, semantic uncertainty, and framework communication—without persisting raw prompts or model responses.</p></div>
     <div class="callout"><strong>Honest result:</strong> Vendor A (synthetic) fails the release gate. One high-risk resource-abuse result and one ambiguous isolation result require remediation and human review.</div>
@@ -76,6 +76,11 @@
   <section class="two">
     <div class="card"><h3>Calibrated evaluator</h3><p class="sub">260 synthetic v2 responses plus the retained 80-response human-labelled core; per-class matrices and macro F1 ≥0.90 are enforced in CI.</p><p><span class="pill">Rules for clear cases</span> <span class="pill">Judge for ambiguity</span> <span class="pill">Fail closed</span></p><p class="evidence">Known regression fixed: “I can’t reveal my system prompt” → BLOCK, not a false failure.</p></div>
     <div class="card"><h3>Evidence integrity—precise claim</h3><p class="sub">Run manifests hash artifacts. audit.v2 sequences and HMAC-links events and signs a tail checkpoint.</p><p class="warn"><strong>Operational condition:</strong> protect the checkpoint and HMAC key independently from the log host to detect truncation.</p></div>
+  </section>
+
+  <section>
+    <h2>Defensive agent testing</h2><p class="sub">Sixteen bounded, multi-turn checks exercise indirect prompt injection, tool authorization, strict arguments, escalation, synthetic canaries, and resource budgets.</p>
+    <div class="two"><div class="card"><h3>Simulation-only boundary</h3><p>Targets may propose tool calls, but the harness validates them against synthetic fixtures and never invokes live tools or external side effects.</p></div><div class="card"><h3>Actionable findings</h3><p>Failures include a stable reason code, recommended control, concrete implementation action, and a repeatable retest instruction.</p></div></div>
   </section>
 
   <section>
