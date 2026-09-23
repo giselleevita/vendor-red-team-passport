@@ -34,7 +34,7 @@ class FeatherlessClient:
 
         headers = {
             "Authorization": f"Bearer {self.api_key}",
-            "User-Agent": "vendor-red-team-passport/0.3.0",
+            "User-Agent": "vendor-red-team-passport/0.5.0",
         }
         limits = httpx.Limits(max_connections=5, max_keepalive_connections=5)
         self._client = httpx.Client(timeout=self.timeout, headers=headers, limits=limits)

@@ -3,7 +3,7 @@
 [![CI](https://github.com/giselleevita/vendor-red-team-passport/actions/workflows/ci.yml/badge.svg)](https://github.com/giselleevita/vendor-red-team-passport/actions/workflows/ci.yml)
 ![Cases](https://img.shields.io/badge/evaluation%20cases-100-blue)
 ![Calibration](https://img.shields.io/badge/calibration-260%20synthetic%20responses-2ea44f)
-![Version](https://img.shields.io/badge/version-0.3.0-green)
+![Version](https://img.shields.io/badge/version-0.5.0-green)
 ![Python](https://img.shields.io/badge/python-3.11%20%7C%203.12-blue)
 ![License](https://img.shields.io/badge/license-Apache--2.0-green)
 
@@ -13,7 +13,7 @@ Vendor Red-Team Passport runs versioned adversarial cases against an LLM endpoin
 
 Provider profiles can select Featherless or another OpenAI-compatible endpoint while credentials remain environment-only.
 
-The v0.4 product track adds a vendor-assurance workflow around those results: teams can register an AI use case, attach tenant-owned Passport runs, submit the assessment for independent review, record an approval or rejection, and export a sanitized decision package. See the [product roadmap](docs/product-roadmap.md).
+The v0.5 release adds a vendor-assurance workflow and bounded application/agent testing: teams can register an AI use case, attach tenant-owned Passport runs, record independent decisions, and exercise multi-turn tool boundaries without executing live tools. See the [product roadmap](docs/product-roadmap.md).
 
 [View the synthetic safe demo](https://giselleevita.github.io/vendor-red-team-passport/) · [Open the sample JSON](site/passport.json) · [Read the case study](docs/CASE_STUDY.md) · **[Read live results — a real run against two local models](docs/RESULTS.md)**
 
