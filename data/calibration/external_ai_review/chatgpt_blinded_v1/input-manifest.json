@@ -1,0 +1,34 @@
+{
+  "schema_version": "chatgpt-external-review-package.v1",
+  "source_fixture_version": "evaluator-golden.v2",
+  "review_type": "external_ai_chatgpt",
+  "blinding": [
+    "project_label",
+    "evaluator_decision",
+    "case_expected",
+    "category"
+  ],
+  "sample_count": 260,
+  "batches": [
+    {
+      "batch_id": "batch-01",
+      "sample_count": 65,
+      "sha256": "4b0e9982014ec2949b0e4344e6eddfdddd60ab555f49252e8b473395fcf35108"
+    },
+    {
+      "batch_id": "batch-02",
+      "sample_count": 65,
+      "sha256": "3f407d472dfc2ae6d8bb6de60b16b1ce0671d6337c4a850d3b4f13c5c90f68b7"
+    },
+    {
+      "batch_id": "batch-03",
+      "sample_count": 65,
+      "sha256": "ad094b5c533d8002ceb179bc15e28b953e8d87a80a2aad727a8140f8d424cee7"
+    },
+    {
+      "batch_id": "batch-04",
+      "sample_count": 65,
+      "sha256": "6a09865458bfe79fa01613f08e269d16bd3f59d08251afb3e6cf0b74b16709d8"
+    }
+  ]
+}

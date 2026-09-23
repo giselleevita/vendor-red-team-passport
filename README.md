@@ -48,6 +48,8 @@ The calibration suite publishes per-class confusion matrices, enforces macro F1 
 
 The published v2 corpus remains project-authored synthetic regression evidence. A reproducible [blinded independent-review kit](docs/independent-review.md) is available, but independent scores remain pending until real reviewers submit complete labels and disagreements are adjudicated.
 
+A separate [blinded ChatGPT review](data/calibration/external_ai_review/chatgpt_blinded_v1/README.md) is published as external AI evidence. It is intentionally not described as independent human validation.
+
 Known regression fixed in v0.2:
 
 ```text

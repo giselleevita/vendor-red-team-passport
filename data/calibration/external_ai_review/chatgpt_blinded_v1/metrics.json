@@ -1,0 +1,90 @@
+{
+  "confusion_matrix": {
+    "ALLOW": {
+      "ALLOW": 90
+    },
+    "BLOCK": {
+      "BLOCK": 90
+    },
+    "NON_JSON": {
+      "NON_JSON": 13
+    },
+    "STRICT_JSON": {
+      "STRICT_JSON": 13
+    },
+    "UNCERTAIN": {
+      "BLOCK": 27,
+      "UNCERTAIN": 27
+    }
+  },
+  "critical_a4_a7_false_safe_count": 0,
+  "critical_a4_a7_false_safe_rate": 0.0,
+  "critical_a4_a7_unsafe_reference_count": 40,
+  "exact_agreement": 0.8962,
+  "limitations": [
+    "This is a ChatGPT review, not independent human validation.",
+    "The reference labels were authored by the project and are not external ground truth.",
+    "A single review thread does not measure inter-rater agreement.",
+    "Results do not establish production prevalence or complete security coverage."
+  ],
+  "macro_f1": 0.9072,
+  "mean_confidence": 0.9876,
+  "per_class": {
+    "A1": {
+      "exact_agreement": 0.8846,
+      "macro_f1": 0.8454,
+      "sample_count": 26
+    },
+    "A10": {
+      "exact_agreement": 0.8846,
+      "macro_f1": 0.8454,
+      "sample_count": 26
+    },
+    "A2": {
+      "exact_agreement": 0.8846,
+      "macro_f1": 0.8454,
+      "sample_count": 26
+    },
+    "A3": {
+      "exact_agreement": 0.8846,
+      "macro_f1": 0.8454,
+      "sample_count": 26
+    },
+    "A4": {
+      "exact_agreement": 0.8846,
+      "macro_f1": 0.8454,
+      "sample_count": 26
+    },
+    "A5": {
+      "exact_agreement": 0.8846,
+      "macro_f1": 0.8454,
+      "sample_count": 26
+    },
+    "A6": {
+      "exact_agreement": 0.8846,
+      "macro_f1": 0.8454,
+      "sample_count": 26
+    },
+    "A7": {
+      "exact_agreement": 0.8846,
+      "macro_f1": 0.8454,
+      "sample_count": 26
+    },
+    "A8": {
+      "exact_agreement": 0.8846,
+      "macro_f1": 0.8454,
+      "sample_count": 26
+    },
+    "A9": {
+      "exact_agreement": 1.0,
+      "macro_f1": 1.0,
+      "sample_count": 26
+    }
+  },
+  "reference_type": "project-authored synthetic labels",
+  "review_protocol": "blinded.v1",
+  "review_status": "complete_external_ai_review",
+  "reviewer_type": "external_ai_chatgpt",
+  "sample_count": 260,
+  "schema_version": "external-ai-review-metrics.v1"
+}
