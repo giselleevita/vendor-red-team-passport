@@ -3,7 +3,7 @@
 [![CI](https://github.com/giselleevita/vendor-red-team-passport/actions/workflows/ci.yml/badge.svg)](https://github.com/giselleevita/vendor-red-team-passport/actions/workflows/ci.yml)
 ![Cases](https://img.shields.io/badge/evaluation%20cases-100-blue)
 ![Calibration](https://img.shields.io/badge/calibration-260%20synthetic%20responses-2ea44f)
-![Version](https://img.shields.io/badge/version-0.2.0-green)
+![Version](https://img.shields.io/badge/version-0.3.0-green)
 ![Python](https://img.shields.io/badge/python-3.11%20%7C%203.12-blue)
 ![License](https://img.shields.io/badge/license-Apache--2.0-green)
 
@@ -12,6 +12,8 @@
 Vendor Red-Team Passport runs versioned adversarial cases against an LLM endpoint and produces a reviewable Passport: JSON and HTML results, deterministic release gates, sanitized evidence, policy metadata, and a hashed artifact manifest.
 
 Provider profiles can select Featherless or another OpenAI-compatible endpoint while credentials remain environment-only.
+
+The v0.4 product track adds a vendor-assurance workflow around those results: teams can register an AI use case, attach tenant-owned Passport runs, submit the assessment for independent review, record an approval or rejection, and export a sanitized decision package. See the [product roadmap](docs/product-roadmap.md).
 
 [View the synthetic safe demo](https://giselleevita.github.io/vendor-red-team-passport/) · [Open the sample JSON](site/passport.json) · [Read the case study](docs/CASE_STUDY.md) · **[Read live results — a real run against two local models](docs/RESULTS.md)**
 
@@ -144,6 +146,18 @@ Each run writes:
 | `GET` | `/profiles` | Evaluation profiles |
 | `GET` | `/metrics` | Auditor/admin metrics |
 | `GET` | `/compare` | Compare two runs |
+| `POST` | `/assessments` | Create a vendor/system assessment |
+| `GET` | `/assessments` | List tenant-owned assessments |
+| `POST` | `/assessments/{id}/runs` | Attach a tenant-owned Passport run |
+| `POST` | `/assessments/{id}/submit` | Submit a draft for review |
+| `POST` | `/assessments/{id}/decision` | Record an auditor/admin decision |
+| `GET` | `/assessments/{id}/evidence-package` | Export a sanitized decision package |
+
+### Vendor assurance workflow
+
+Assessments are tenant-isolated records containing the vendor, evaluated system, intended use, owner, risk tier, data classification, review deadline, linked Passport runs, and decision history. Operators prepare and submit assessments; auditors or administrators make the final decision. The evidence package contains only Passport summaries and intentionally excludes raw prompts and model responses.
+
+The current `assurance.v1` store is file-backed and suited to local evaluation and demonstrations. It uses atomic replacement and optimistic concurrency checks, but production multi-instance deployments should wait for the planned SQL-backed assessment store in v1.0.
 
 Profiles select a `provider` adapter, not just an endpoint. `featherless` (the default, used by the bundled profiles) and `openai-compatible` are both first-class — the same HTTP client and retry/pacing logic serve either, so pointing the suite at a different vendor is a config change, not a code change. See [`profiles/openai_compatible_example.yaml`](profiles/openai_compatible_example.yaml): copy it, set `base_url` to the target endpoint, export `TARGET_API_KEY`, and run. Covered by [`tests/api/test_providers_v3.py`](tests/api/test_providers_v3.py).
 

@@ -1,5 +1,24 @@
 # Changelog
 
+## Unreleased - v0.4.0
+
+### Added
+
+- Tenant-isolated vendor and AI-system assessment records.
+- A review lifecycle linking Passport runs to auditor decisions and conditions.
+- Sanitized assurance evidence packages that exclude raw prompts and responses.
+- A four-release product roadmap focused on vendor-assurance teams.
+
+### Fixed
+
+- Keep the orchestrator artifact test offline after the provider-factory refactor.
+- Encode validator context safely so invalid API input returns the documented 422 response.
+
+### Known limitations
+
+- The initial assessment store is file-backed and intended for local or single-instance use.
+- The assessment workflow does not yet include a browser UI, expiring approvals, or notifications.
+
 ## v0.3.0 - 2026-09-01
 
 ### Added

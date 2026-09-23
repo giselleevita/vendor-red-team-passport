@@ -5,6 +5,9 @@ from apps.api.services.orchestrator import run_orchestrated
 
 
 class DummyClient:
+    provider_name = "offline-test"
+    base_url = "http://127.0.0.1:9999/v1"
+
     def __enter__(self):
         return self
 
@@ -56,11 +59,10 @@ def test_orchestrator_writes_artifacts(tmp_path, monkeypatch) -> None:
     CaseSuite.model_validate(suite)
 
     monkeypatch.chdir(tmp_path)
-    # Monkeypatch orchestrator to use DummyClient instead of real FeatherlessClient
+    # Patch the provider factory so this test remains offline as adapters evolve.
     import apps.api.services.orchestrator as orch
-    from apps.api import services as _svc  # noqa: F401
 
-    orch.FeatherlessClient = DummyClient  # type: ignore[attr-defined]
+    monkeypatch.setattr(orch, "create_provider", lambda profile=None: DummyClient())
 
     run_id = run_orchestrated(model="x", only_classes=["A9"], a9_mode="compat", run_id="test-run")
     assert run_id == "test-run"

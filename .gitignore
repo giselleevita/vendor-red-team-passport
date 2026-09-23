@@ -19,3 +19,5 @@ reports/audit/*.lock
 reports/audit/*.checkpoint.json
 reports/jobs/*.json
 reports/jobs.db
+reports/assessments/*.json
+reports/assessments/.store.lock
