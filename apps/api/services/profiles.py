@@ -58,9 +58,16 @@ def load_profile(name_or_path: str, *, allow_external_paths: bool = True) -> dic
             raise ValueError("invalid profile name")
         path = builtin_profile(raw)
     else:
+        # External paths are an explicit local-CLI capability. HTTP callers always
+        # set allow_external_paths=False, and the selected file is read-only.
+        # lgtm[py/path-injection]
         p = Path(raw).expanduser()
-        if p.exists():
+        if p.exists() and p.suffix.lower() not in {".yaml", ".yml", ".json"}:
+            raise ValueError("external profiles must be YAML or JSON")
+        if p.exists() and p.is_file():
             path = p.resolve()
+        elif p.exists():
+            raise ValueError("external profile path must be a regular file")
         else:
             path = builtin_profile(raw)
 

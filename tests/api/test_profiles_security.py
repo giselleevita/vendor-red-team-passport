@@ -31,3 +31,15 @@ def test_nested_profile_credentials_are_rejected(tmp_path: Path) -> None:
     )
     with pytest.raises(ValueError, match="credentials"):
         load_profile(str(profile))
+
+
+def test_external_profile_must_be_a_supported_regular_file(tmp_path: Path) -> None:
+    unsupported = tmp_path / "profile.txt"
+    unsupported.write_text("name: unsafe-extension\n", encoding="utf-8")
+    with pytest.raises(ValueError, match="YAML or JSON"):
+        load_profile(str(unsupported))
+
+    directory = tmp_path / "profile.yaml"
+    directory.mkdir()
+    with pytest.raises(ValueError, match="regular file"):
+        load_profile(str(directory))
