@@ -9,6 +9,7 @@ from fastapi.templating import Jinja2Templates
 from apps.api.config import get_settings
 from apps.api.services.auth import RequestContext, require_roles
 from apps.api.services.claims import build_claim_matrix
+from apps.api.services.operations import portfolio
 from apps.api.services.orchestrator import render_passport_html
 from apps.api.services.profiles import list_profiles
 from apps.api.services.run_store import (
@@ -69,6 +70,18 @@ def landing(
             "profiles": [item for item in profiles if not str(item.get("name", "")).startswith("agent_")],
             "agent_profiles": [item for item in profiles if str(item.get("name", "")).startswith("agent_")],
         },
+    )
+
+
+@router.get("/portfolio", response_class=HTMLResponse)
+def portfolio_view(
+    request: Request,
+    ctx: RequestContext = Depends(require_roles("viewer", "auditor", "operator", "admin")),
+) -> HTMLResponse:
+    return templates.TemplateResponse(
+        request,
+        "portfolio.html.j2",
+        {"request": request, "items": portfolio(ctx.tenant_id)},
     )
 
 

@@ -3,7 +3,7 @@
 [![CI](https://github.com/giselleevita/vendor-red-team-passport/actions/workflows/ci.yml/badge.svg)](https://github.com/giselleevita/vendor-red-team-passport/actions/workflows/ci.yml)
 ![Cases](https://img.shields.io/badge/evaluation%20cases-100-blue)
 ![Calibration](https://img.shields.io/badge/calibration-260%20synthetic%20responses-2ea44f)
-![Version](https://img.shields.io/badge/version-0.5.1-green)
+![Version](https://img.shields.io/badge/version-0.6.0-green)
 ![Python](https://img.shields.io/badge/python-3.11%20%7C%203.12-blue)
 ![License](https://img.shields.io/badge/license-Apache--2.0-green)
 
@@ -15,7 +15,7 @@ Vendor Red-Team Passport runs versioned adversarial cases against an LLM endpoin
 
 Provider profiles can select Featherless or another OpenAI-compatible endpoint while credentials remain environment-only.
 
-The v0.5 release adds a vendor-assurance workflow and bounded application/agent testing: teams can register an AI use case, attach tenant-owned Passport runs, record independent decisions, and exercise multi-turn tool boundaries without executing live tools. See the [product roadmap](docs/product-roadmap.md).
+The v0.6 release adds continuous assurance: approved assessments pin explicit baselines, recurring evaluations detect drift, versioned policies fail closed, approvals expire, signed webhooks notify downstream systems, and an operational queue prioritizes review work. See the [continuous-assurance guide](docs/continuous-assurance.md) and [product roadmap](docs/product-roadmap.md).
 
 [View the synthetic safe demo](https://giselleevita.github.io/vendor-red-team-passport/) · [Open the sample JSON](site/passport.json) · [Read the case study](docs/CASE_STUDY.md) · **[Read live results — a real run against two local models](docs/RESULTS.md)**
 
@@ -161,12 +161,24 @@ Each run writes:
 | `POST` | `/assessments/{id}/submit` | Submit a draft for review |
 | `POST` | `/assessments/{id}/decision` | Record an auditor/admin decision |
 | `GET` | `/assessments/{id}/evidence-package` | Export a sanitized decision package |
+| `PUT` | `/assessments/{id}/baseline` | Pin or explicitly replace an approved baseline |
+| `POST` | `/assessments/{id}/evaluate` | Evaluate a candidate against baseline and policy |
+| `GET` | `/assessments/{id}/drift` | Retrieve versioned evaluation history |
+| `POST/GET/PATCH` | `/assurance/schedules` | Manage tenant-scoped recurring reassessments |
+| `POST/GET/PATCH` | `/assurance/webhooks` | Manage environment-secret signed destinations |
+| `GET` | `/assurance/portfolio` | Retrieve the urgency-sorted operational queue |
 
 ### Vendor assurance workflow
 
 Assessments are tenant-isolated records containing the vendor, evaluated system, intended use, owner, risk tier, data classification, review deadline, linked Passport runs, and decision history. Operators prepare and submit assessments; auditors or administrators make the final decision. The evidence package contains only Passport summaries and intentionally excludes raw prompts and model responses.
 
-The current `assurance.v1` store is file-backed and suited to local evaluation and demonstrations. It uses atomic replacement and optimistic concurrency checks, but production multi-instance deployments should wait for the planned SQL-backed assessment store in v1.0.
+The current `assurance.v2` assessment, schedule, and webhook-delivery store is file-backed and suited to local evaluation and single-instance deployments. It uses atomic replacement, locking, optimistic concurrency, and idempotent schedule job identities, but production multi-instance deployments should wait for the planned SQL-backed assessment store in v1.0. SQL run jobs and Redis rate limits may already be shared across workers.
+
+### Continuous assurance
+
+An auditor-approved assessment pins one completed run as its baseline. Replacement is explicit, authorized, recorded in baseline history, and audited. Candidate runs are comparable only when their evaluator, taxonomy, and suite versions are compatible; absent, malformed, or incompatible evidence returns `UNKNOWN` and cannot pass. Approval deadlines fail closed.
+
+The existing worker also claims due schedules and runs the comparison/policy pipeline after successful execution. Generic HTTPS webhooks carry sanitized events signed with an environment-resolved HMAC key. Consumers must verify timestamp, event ID, key ID, and signature and should reject replays. The browser portfolio at `/portfolio` shows expired, failed, review-required, and upcoming work in urgency order.
 
 ### Defensive application and agent testing
 

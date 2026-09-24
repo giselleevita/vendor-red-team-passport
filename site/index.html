@@ -20,7 +20,7 @@
 </head>
 <body>
 <div class="wrap">
-  <nav class="nav"><div class="brand">VENDOR RED-TEAM PASSPORT <span class="tag">v0.5.1</span></div><div class="nav-links"><a href="passport.json">Passport JSON</a> · <a href="assurance.json">Assurance JSON</a> · <a href="https://github.com/giselleevita/vendor-red-team-passport">Source</a></div></nav>
+  <nav class="nav"><div class="brand">VENDOR RED-TEAM PASSPORT <span class="tag">v0.6.0</span></div><div class="nav-links"><a href="passport.json">Passport JSON</a> · <a href="assurance.json">Assurance JSON</a> · <a href="continuous-assurance.json">Continuous assurance JSON</a> · <a href="https://github.com/giselleevita/vendor-red-team-passport">Source</a></div></nav>
   <header class="hero">
     <div><span class="tag">Synthetic safe demonstration</span><h1>Vendor safety evidence that can survive review.</h1><p class="lead">A versioned LLM evaluation pipeline that separates deterministic evidence, semantic uncertainty, and framework communication—without persisting raw prompts or model responses.</p></div>
     <div class="callout"><strong>Honest result:</strong> Vendor A (synthetic) fails the release gate. One high-risk resource-abuse result and one ambiguous isolation result require remediation and human review.</div>
@@ -39,8 +39,19 @@
     <h2>From test result to assurance decision</h2><p class="sub">The Passport is evidence, not the final procurement decision. The assurance workflow adds ownership, business context, independent review, and a durable decision trail.</p>
     <div class="two">
       <div class="card"><span class="pill">High risk · Confidential data</span><h3 style="margin-top:16px">Vendor A · Customer-support assistant</h3><p class="sub">Use case: draft support responses for human review before sending.</p><table><tbody><tr><th>Owner</th><td>AI Security Assurance</td></tr><tr><th>Evidence</th><td>1 linked Passport run</td></tr><tr><th>Gate</th><td class="status fail">FAIL</td></tr><tr><th>Review items</th><td class="status warn">1 unresolved</td></tr></tbody></table></div>
-      <div class="card"><span class="pill">Independent review</span><h3 class="fail" style="margin-top:16px">Decision · Rejected</h3><p>The failed release gate and unresolved review item prevent approval. Remediation and a new evaluation are required.</p><p class="sub">The exported package contains assessment context, decision history, and Passport summaries. It excludes raw prompts and model responses.</p><p><a href="assurance.json">Inspect the synthetic assurance package →</a></p></div>
+      <div class="card"><span class="pill">Security review decision</span><h3 class="fail" style="margin-top:16px">Decision · Rejected</h3><p>The failed release gate and unresolved review item prevent approval. Remediation and a new evaluation are required.</p><p class="sub">The exported package contains assessment context, decision history, and Passport summaries. It excludes raw prompts and model responses.</p><p><a href="assurance.json">Inspect the synthetic assurance package →</a></p></div>
     </div>
+  </section>
+
+  <section>
+    <h2>Continuous assurance lifecycle</h2><p class="sub">A synthetic approved baseline becomes an auditable reference, not a silently moving target.</p>
+    <div class="timeline">
+      <div class="card"><h3>Pin</h3><p>An authorized reviewer pins a completed baseline and the exact policy digest.</p></div>
+      <div class="card"><h3>Schedule</h3><p>The native worker creates idempotent recurring reassessment jobs.</p></div>
+      <div class="card"><h3>Detect</h3><p>Drift, version incompatibility, missing evidence, and expired approval fail closed.</p></div>
+      <div class="card"><h3>Act</h3><p>Urgent work enters the operational queue and emits a signed, sanitized event.</p></div>
+    </div>
+    <p><a href="continuous-assurance.json">Inspect the synthetic lifecycle evidence →</a></p>
   </section>
 
   <section>
@@ -93,7 +104,7 @@
     </div>
   </section>
 
-  <footer class="footer">All content on this page—including the assurance decision—is synthetic. No real vendor output, secrets, credentials, or operational offensive instructions are included. Framework mappings are communication aids, not certification.</footer>
+  <footer class="footer">All content on this page—including the assurance decision and continuous-assurance lifecycle—is synthetic. The published ChatGPT panel is external AI review evidence, not independent human validation. No real vendor output, secrets, credentials, or operational offensive instructions are included. Framework mappings are communication aids, not certification.</footer>
 </div>
 </body>
 </html>

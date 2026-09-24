@@ -45,6 +45,8 @@ def test_ui_landing_list_claims_and_comparison(tmp_path, monkeypatch, auth_heade
     assert landing.status_code == 200
     assert "Run defensive scenarios" in landing.text
     assert '<script src="/static/app.js" defer></script>' in landing.text
+    portfolio = client.get("/portfolio", headers=headers)
+    assert portfolio.status_code == 200 and "Continuous assurance queue" in portfolio.text
     assert client.get("/static/app.js").status_code == 200
     runs = client.get("/runs", headers=headers)
     assert runs.status_code == 200 and "2026-a" in runs.text and "2026-b" in runs.text

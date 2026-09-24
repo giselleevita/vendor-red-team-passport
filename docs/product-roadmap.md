@@ -20,10 +20,12 @@ Vendor Red-Team Passport is becoming an open-core, local-first assurance product
 
 ## v0.6 — Continuous assurance
 
-- [ ] Versioned baselines, drift detection, scheduled re-evaluation, and expiring approvals.
-- [ ] Policy-as-code gates by risk tier and data classification.
-- [ ] Webhooks and issue-tracker integrations for findings and review deadlines.
-- [ ] Portfolio views across vendors, systems, models, and unresolved conditions.
+- [x] Explicit, versioned baselines, drift detection, scheduled re-evaluation, and fail-closed approval expiry.
+- [x] Validated policy-as-code gates selected by risk tier and data classification.
+- [x] Generic signed webhooks for failed drift, failed policy, reassessment failure, and review deadlines.
+- [x] Tenant-scoped operational portfolio queue for urgent assurance work.
+
+The v0.6 assessment and schedule store remains file-backed and is intended for a single application instance. SQL-backed run jobs may use multiple workers. Durable multi-instance assessment storage remains planned for v1.0.
 
 ## v1.0 — Enterprise collaboration
 
