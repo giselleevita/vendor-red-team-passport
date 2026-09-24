@@ -1,0 +1,82 @@
+name: External adoption pilot feedback
+description: Report a clean-environment attempt of the offline reviewer demo
+title: "[adoption pilot]: "
+labels:
+  - usability
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for testing the offline reviewer path. Do not include API keys, tokens, private model output, employer-confidential information, or offensive payloads.
+  - type: dropdown
+    id: role
+    attributes:
+      label: Role category
+      options:
+        - AI or application security
+        - Governance, risk, compliance, or vendor risk
+        - Software engineering
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Test environment
+      description: Operating system and Python or Docker version; omit private hostnames and paths.
+    validations:
+      required: true
+  - type: dropdown
+    id: completed
+    attributes:
+      label: Did the offline reviewer demo complete?
+      options:
+        - "Yes"
+        - "No"
+    validations:
+      required: true
+  - type: input
+    id: minutes
+    attributes:
+      label: Minutes to locate the generated Passport
+      placeholder: "8"
+    validations:
+      required: true
+  - type: textarea
+    id: gate
+    attributes:
+      label: What does the release gate mean?
+    validations:
+      required: true
+  - type: textarea
+    id: unknown
+    attributes:
+      label: What does UNKNOWN mean?
+    validations:
+      required: true
+  - type: textarea
+    id: limitation
+    attributes:
+      label: One limitation you identified
+    validations:
+      required: true
+  - type: textarea
+    id: confusion
+    attributes:
+      label: First confusing step or error
+      description: Redact secrets and private data.
+    validations:
+      required: true
+  - type: textarea
+    id: improvement
+    attributes:
+      label: One change that would most increase your trust
+    validations:
+      required: true
+  - type: checkboxes
+    id: confirmation
+    attributes:
+      label: Safety confirmation
+      options:
+        - label: I removed credentials, private model output, personal data, and employer-confidential information.
+          required: true

@@ -49,6 +49,8 @@ The Passport now communicates three different things separately:
 
 That separation prevents deterministic scoring from being presented as automatic truth. The synthetic demo intentionally fails its vendor so reviewers can see remediation and uncertainty rather than a marketing-perfect result.
 
+This engineering case study describes project-authored development and synthetic evidence. It is not evidence of external product adoption. A prospective [external adoption pilot](ADOPTION_PILOT.md) and [sanitized case-study template](CASE_STUDY_TEMPLATE.md) define how real usability evidence will be collected and published without inventing results.
+
 ## Version 0.3 platform outcome
 
 Version 0.3 adds streaming size enforcement, Redis-capable shared rate limits, endpoint-selecting provider adapters with environment-only secrets, a packaged four-command CLI, an 85% coverage gate, CycloneDX SBOM generation, signed GitHub provenance, and scheduled dependency/security scans.
