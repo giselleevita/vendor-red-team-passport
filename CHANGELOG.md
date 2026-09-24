@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### Adoption evidence
+
+- Add a v0.6 screen-recording script with a safe publication checklist.
+- Add a prospective external-user pilot protocol with measurable completion and comprehension targets.
+- Add structured GitHub feedback intake and a sanitized case-study template.
+- Keep adoption results explicitly pending until real external sessions are completed.
+
 ## v0.6.0 - 2026-09-23
 
 ### Continuous assurance

@@ -19,7 +19,9 @@ The v0.6 release adds continuous assurance: approved assessments pin explicit ba
 
 [View the synthetic safe demo](https://giselleevita.github.io/vendor-red-team-passport/) · [Open the sample JSON](site/passport.json) · [Read the case study](docs/CASE_STUDY.md) · **[Read live results — a real run against two local models](docs/RESULTS.md)**
 
-Start with the [90-second v0.5 walkthrough](docs/WALKTHROUGH_V050.md), then reproduce the offline agent report with `make agent-demo`.
+Start with the [90-second v0.6 walkthrough](docs/WALKTHROUGH_V060.md), then reproduce the offline agent report with `make agent-demo`.
+
+Want to test the project as a first-time reviewer? Follow the documented [external adoption pilot](docs/ADOPTION_PILOT.md) and submit the structured GitHub feedback form. Adoption metrics remain pending until at least three real external sessions are complete; no external-user success rate is claimed today.
 
 Latest bounded check: [10-case local OpenAI-compatible prompt-leakage evaluation](docs/results/2026-09-09-qwen35-4b-a4-quick.md) — completed with a fail-closed release-gate result.
 
