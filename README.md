@@ -21,7 +21,7 @@ The v0.6 release adds continuous assurance: approved assessments pin explicit ba
 
 Start with the [90-second v0.6 walkthrough](docs/WALKTHROUGH_V060.md), then reproduce the offline agent report with `make agent-demo`.
 
-Want to test the project as a first-time reviewer? Follow the documented [external adoption pilot](docs/ADOPTION_PILOT.md) and submit the structured GitHub feedback form. Adoption metrics remain pending until at least three real external sessions are complete; no external-user success rate is claimed today.
+Want to test the project as a first-time reviewer? Follow the documented [external adoption pilot](docs/ADOPTION_PILOT.md) and use the [structured GitHub feedback form](https://github.com/giselleevita/vendor-red-team-passport/issues/new?template=adoption-pilot.yml). The offline command checks the project and points to a committed synthetic Passport; it does not make a model call. Adoption metrics remain pending until at least three real external sessions are complete.
 
 Latest bounded check: [10-case local OpenAI-compatible prompt-leakage evaluation](docs/results/2026-09-09-qwen35-4b-a4-quick.md) — completed with a fail-closed release-gate result.
 
