@@ -9,13 +9,16 @@ from apps.api.schemas.assurance import (
     AssessmentCreateRequest,
     AssessmentDecision,
     AssessmentDecisionRequest,
+    AssessmentEvaluateRequest,
     AssessmentRecord,
     AssessmentRunLinkRequest,
     AssessmentStatus,
+    BaselineSetRequest,
 )
 from apps.api.services.assurance import list_assessments_for_tenant, load_assessment, save_assessment
 from apps.api.services.audit import log_audit_event
 from apps.api.services.auth import RequestContext, hash_subject, require_roles
+from apps.api.services.continuous import evaluate_assessment, policy_digest, refresh_expiry, select_policy
 from apps.api.services.run_store import load_passport, load_run_meta, run_accessible_by_tenant
 
 router = APIRouter(prefix="/assessments", tags=["assurance"])
@@ -96,6 +99,11 @@ def list_assessments(
     ctx: RequestContext = Depends(require_roles("viewer", "auditor", "operator", "admin")),
 ) -> dict:
     records = list_assessments_for_tenant(ctx.tenant_id)
+    for record in records:
+        previous = record.updated_at
+        if refresh_expiry(record):
+            record.updated_at = _now()
+            _save_update(record, previous)
     return {"items": [record.model_dump(mode="json") for record in records], "count": len(records)}
 
 
@@ -104,7 +112,84 @@ def get_assessment(
     assessment_id: str,
     ctx: RequestContext = Depends(require_roles("viewer", "auditor", "operator", "admin")),
 ) -> dict:
-    return _owned_assessment(assessment_id, ctx.tenant_id).model_dump(mode="json")
+    record = _owned_assessment(assessment_id, ctx.tenant_id)
+    previous = record.updated_at
+    if refresh_expiry(record):
+        record.updated_at = _now()
+        _save_update(record, previous)
+    return record.model_dump(mode="json")
+
+
+@router.put("/{assessment_id}/baseline")
+def set_baseline(
+    assessment_id: str,
+    payload: BaselineSetRequest,
+    request: Request,
+    ctx: RequestContext = Depends(require_roles("auditor", "admin")),
+) -> dict:
+    record = _owned_assessment(assessment_id, ctx.tenant_id)
+    if record.status not in {AssessmentStatus.APPROVED, AssessmentStatus.APPROVED_WITH_CONDITIONS}:
+        raise HTTPException(status_code=409, detail="an assessment must be approved before its baseline is set")
+    _require_tenant_run(payload.run_id, ctx.tenant_id)
+    if load_passport(payload.run_id) is None:
+        raise HTTPException(status_code=409, detail="baseline run is incomplete")
+    now = _now()
+    actor = hash_subject(ctx.subject)
+    previous_updated_at = record.updated_at
+    if record.baseline_run_id:
+        record.baseline_history.append(
+            {
+                "schema_version": "baseline.v1",
+                "run_id": record.baseline_run_id,
+                "replaced_at": now.isoformat(),
+                "replaced_by": actor,
+                "rationale": payload.rationale,
+            }
+        )
+    policy = select_policy(risk_tier=str(record.risk_tier), data_classification=str(record.data_classification))
+    record.baseline_run_id = payload.run_id
+    record.baseline_set_at = now
+    record.baseline_set_by = actor
+    record.policy_id = policy.policy_id
+    record.policy_version = policy.version
+    record.policy_digest = policy_digest(policy)
+    record.updated_at = now
+    _save_update(record, previous_updated_at)
+    _audit(request, ctx, "assessment.baseline.set", record.assessment_id)
+    return record.model_dump(mode="json")
+
+
+@router.post("/{assessment_id}/evaluate")
+def evaluate_candidate(
+    assessment_id: str,
+    payload: AssessmentEvaluateRequest,
+    request: Request,
+    ctx: RequestContext = Depends(require_roles("operator", "auditor", "admin")),
+) -> dict:
+    record = _owned_assessment(assessment_id, ctx.tenant_id)
+    _require_tenant_run(payload.candidate_run_id, ctx.tenant_id)
+    result = evaluate_assessment(record, payload.candidate_run_id, policy_id=payload.policy_id)
+    previous_updated_at = record.updated_at
+    record.last_evaluation = result
+    record.evaluation_history.append(result)
+    record.evaluation_history = record.evaluation_history[-100:]
+    record.policy_id = result["policy"]["policy_id"]
+    record.policy_version = result["policy"]["version"]
+    record.policy_digest = result["policy"]["digest"]
+    refresh_expiry(record)
+    record.updated_at = _now()
+    _save_update(record, previous_updated_at)
+    _audit(request, ctx, "assessment.evaluate", record.assessment_id)
+    return result
+
+
+@router.get("/{assessment_id}/drift")
+def get_drift_history(
+    assessment_id: str,
+    ctx: RequestContext = Depends(require_roles("viewer", "auditor", "operator", "admin")),
+) -> dict:
+    record = _owned_assessment(assessment_id, ctx.tenant_id)
+    return {"items": record.evaluation_history, "count": len(record.evaluation_history)}
 
 
 @router.post("/{assessment_id}/runs")

@@ -1,0 +1,12 @@
+schema_version: policy.v1
+policy_id: standard
+version: "1.0.0"
+risk_tiers: [low, medium]
+data_classifications: [public, internal]
+rules:
+  required_release_gate: PASS
+  max_review_required: 0
+  allowed_regression_severity: none
+  mandatory_evidence: [passport, manifest]
+  approval_duration_days: 90
+  reassessment_frequency_days: 30

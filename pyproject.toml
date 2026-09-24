@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "vendor-red-team-passport"
-version = "0.5.1"
+version = "0.6.0"
 description = "Analyst-first defensive LLM red-team passport"
 license = "Apache-2.0"
 license-files = ["LICENSE"]
@@ -62,4 +62,5 @@ include = ["apps*", "data*", "profiles*"]
 "data.cases" = ["*.json"]
 "data.compliance" = ["*.yaml"]
 "data.scenarios" = ["*.json"]
+"data.policies" = ["*.yaml", "*.yml"]
 "profiles" = ["*.yaml", "*.yml", "*.json"]
