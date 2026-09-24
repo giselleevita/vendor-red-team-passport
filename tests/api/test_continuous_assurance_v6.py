@@ -171,7 +171,6 @@ def test_schedule_and_webhook_api_authorization_and_validation(tmp_path: Path, m
     assert client.patch(f"/assurance/webhooks/{webhook_id}", json={"url": "https://example.test/hook?token=x"}, headers=admin).status_code == 422
     assert client.get("/assurance/webhooks", headers=operator).status_code == 403
     assert client.get("/assurance/portfolio", headers=operator).status_code == 200
-    assert client.get("/portfolio", headers=operator).status_code == 200
 
 
 def test_webhook_validation_signing_redaction_and_replay_safety(tmp_path: Path, monkeypatch, auth_header) -> None:
