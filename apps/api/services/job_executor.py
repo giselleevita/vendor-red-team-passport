@@ -67,7 +67,7 @@ def execute_job(job_id: str) -> dict:
                 suite_path=str(job.get("suite_path") or default_case_suite()),
                 profile=profile,
             )
-        return update_job(
+        completed = update_job(
             job_id,
             {
                 "status": "succeeded",
@@ -75,6 +75,11 @@ def execute_job(job_id: str) -> dict:
                 "error": "",
             },
         )
+        if job.get("schedule_id"):
+            from apps.api.services.operations import complete_scheduled_job
+
+            complete_scheduled_job(completed, succeeded=True)
+        return completed
     except Exception as e:  # noqa: BLE001
         err = str(e)[:240]
         if attempt_no < max_attempts:
@@ -91,7 +96,7 @@ def execute_job(job_id: str) -> dict:
                     "next_attempt_at": eta,
                 },
             )
-        return update_job(
+        completed = update_job(
             job_id,
             {
                 "status": "dead_letter",
@@ -100,3 +105,8 @@ def execute_job(job_id: str) -> dict:
                 "next_attempt_at": None,
             },
         )
+        if job.get("schedule_id"):
+            from apps.api.services.operations import complete_scheduled_job
+
+            complete_scheduled_job(completed, succeeded=False)
+        return completed

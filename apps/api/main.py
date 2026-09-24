@@ -18,6 +18,7 @@ from apps.api.config_validation import validate_all
 from apps.api.routes.assurance import router as assurance_router
 from apps.api.routes.health import router as health_router
 from apps.api.routes.metrics import router as metrics_router
+from apps.api.routes.operations import router as operations_router
 from apps.api.routes.passport import router as passport_router
 from apps.api.routes.profiles import router as profiles_router
 from apps.api.routes.run import limiter
@@ -35,7 +36,7 @@ async def lifespan(_app: FastAPI):
 
 app = FastAPI(
     title="AI Vendor Red-Team Passport API",
-    version="0.5.1",
+    version="0.6.0",
     docs_url=None,
     redoc_url=None,
     openapi_url=None,
@@ -46,6 +47,7 @@ app.mount("/static", StaticFiles(directory=str(Path(__file__).resolve().parent /
 
 app.include_router(health_router)
 app.include_router(assurance_router)
+app.include_router(operations_router)
 app.include_router(run_router)
 app.include_router(passport_router)
 app.include_router(profiles_router)
