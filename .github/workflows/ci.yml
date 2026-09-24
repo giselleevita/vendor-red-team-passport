@@ -126,6 +126,8 @@ jobs:
           summary = json.loads((root / "agent-report.json").read_text())["summary"]
           assert summary["release_gate"] == "PASS"
           assert summary["total_scenarios"] == 16
+          from apps.api.services.continuous import list_policies
+          assert {p.policy_id for p in list_policies()} == {"standard", "elevated", "strict"}
           PY
 
   docker:

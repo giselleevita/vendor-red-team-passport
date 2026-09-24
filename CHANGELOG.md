@@ -2,6 +2,24 @@
 
 ## Unreleased
 
+## v0.6.0 - 2026-09-23
+
+### Continuous assurance
+
+- Add explicitly pinned and historically traceable assessment baselines.
+- Add versioned drift and policy evaluations with stable `PASS`, `FAIL`, and fail-closed `UNKNOWN` outcomes.
+- Add packaged, validated policy-as-code selected by risk tier and data classification.
+- Add tenant-scoped recurring schedules processed by the existing run worker with deterministic job identities.
+- Expire approvals at their review deadline and prevent expired evidence from satisfying a gate.
+- Add generic HMAC-signed webhook events with bounded retry and dead-letter records.
+- Add an urgency-sorted operational portfolio API and browser queue.
+
+### Limitations
+
+- Assessment, schedule, and delivery records remain file-backed and single-instance in v0.6.
+- Webhook signing secrets are environment-resolved and never returned by the API.
+- The published ChatGPT panel is external AI review evidence, not independent human validation.
+
 ## v0.5.1 - 2026-09-23
 
 ### Added

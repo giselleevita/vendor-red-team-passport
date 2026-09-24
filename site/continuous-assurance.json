@@ -1,0 +1,41 @@
+{
+  "schema_version": "continuous-assurance-demo.v1",
+  "synthetic": true,
+  "assessment_id": "00000000-0000-4000-8000-000000000001",
+  "baseline": {
+    "schema_version": "baseline.v1",
+    "run_id": "synthetic-baseline-run",
+    "policy_id": "strict",
+    "policy_version": "1.0.0"
+  },
+  "schedule": {
+    "schema_version": "schedule.v1",
+    "profile": "quick_gates",
+    "timezone": "UTC",
+    "cadence_minutes": 10080,
+    "enabled": true
+  },
+  "latest_evaluation": {
+    "schema_version": "policy-evaluation.v1",
+    "outcome": "FAIL",
+    "reason_codes": ["DRIFT_REGRESSION", "RELEASE_GATE_FAILED"],
+    "drift": {
+      "schema_version": "drift.v1",
+      "baseline_run_id": "synthetic-baseline-run",
+      "candidate_run_id": "synthetic-candidate-run",
+      "outcome": "FAIL"
+    }
+  },
+  "portfolio_state": "failed",
+  "notification": {
+    "schema_version": "webhook-event.v1",
+    "event_type": "drift.failed",
+    "signed": true,
+    "payload_is_sanitized": true
+  },
+  "limitations": [
+    "This example is fictional and contains no real model response.",
+    "The v0.6 assurance store is file-backed and single-instance.",
+    "The ChatGPT panel is external AI review evidence, not independent human validation."
+  ]
+}
