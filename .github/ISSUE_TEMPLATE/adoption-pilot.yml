@@ -38,7 +38,7 @@ body:
   - type: input
     id: minutes
     attributes:
-      label: Minutes to locate the generated Passport
+      label: Minutes to locate the synthetic Passport
       placeholder: "8"
     validations:
       required: true

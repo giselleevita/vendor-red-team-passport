@@ -14,7 +14,7 @@ Use this template after real pilot sessions. Delete instructional text before pu
 
 ## Question
 
-Can a new reviewer run the offline demonstration, locate the generated Passport, and correctly interpret its fail-closed decision without assistance?
+Can a new reviewer run the offline demonstration, locate its synthetic Passport, and correctly interpret the release-gate decision without assistance?
 
 ## Method
 
@@ -48,9 +48,8 @@ Include only consented, anonymized quotations. Label paraphrases as paraphrases.
 
 ## Limitations
 
-At minimum, disclose the small convenience sample, the offline mocked provider, the absence of production deployment evidence, and any assistance supplied by the project author.
+At minimum, disclose the small convenience sample, the committed synthetic Passport used by the offline reviewer command, the absence of production deployment evidence, and any assistance supplied by the project author.
 
 ## Conclusion
 
 State only what the observed sessions support. Keep evaluator accuracy, independent human validation, security assurance, and product usability as separate claims.
-

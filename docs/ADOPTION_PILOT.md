@@ -14,11 +14,13 @@ Recruit three to five participants who did not contribute to the repository. A u
 
 Record the participant's role category and relevant experience, but do not publish names or employers without explicit consent.
 
+The [reviewer invitation](PILOT_INVITATION.md) is ready to send once recipients are chosen.
+
 ## Participant task
 
 Give the participant only the repository URL and this instruction:
 
-> Using a clean environment, run the offline reviewer demo, locate the generated Passport, explain why the release gate passed, failed, or returned unknown, and identify one limitation. Do not use an API key or submit private data.
+> Using a clean checkout, run the offline reviewer demo, locate the synthetic Passport shown by that command, explain its release-gate result, and identify one limitation. Do not use an API key or submit private data.
 
 The expected command is:
 
@@ -26,7 +28,7 @@ The expected command is:
 make reviewer-demo
 ```
 
-Do not explain the interface unless the participant becomes blocked. Record each hint separately.
+The command runs the tests and points to `site/index.html`, a committed synthetic demonstration. It does not generate a new model run. The participant may inspect `site/passport.json` for the underlying sample. Do not explain the interface unless the participant becomes blocked. Record each hint separately.
 
 ## Measures
 
@@ -35,7 +37,7 @@ For each session, collect:
 | Measure | Target |
 |---|---:|
 | Completion without project-author help | at least 80% |
-| Time to generated Passport | 10 minutes or less |
+| Time to locate the synthetic Passport | 10 minutes or less |
 | Correct explanation of `PASS`, `FAIL`, and `UNKNOWN` | at least 80% |
 | Correctly identifies one documented limitation | 100% |
 | Credentials or sensitive data exposed | 0 |
@@ -48,7 +50,7 @@ Ask every participant the same questions:
 
 1. What did you think the project does before running it?
 2. Did the offline command complete? If not, copy the non-sensitive error message.
-3. How many minutes passed before you found the Passport?
+3. How many minutes passed before you found the synthetic Passport?
 4. In your own words, what does the release gate mean?
 5. What does `UNKNOWN` mean?
 6. Which artifact would you use to support a review decision?
@@ -56,6 +58,8 @@ Ask every participant the same questions:
 8. What single change would most increase your trust?
 9. Would this fit an existing security or vendor-review workflow? Why or why not?
 10. May anonymized observations from this session be published? (`yes` or `no`)
+
+Participants can use the [structured GitHub feedback form](https://github.com/giselleevita/vendor-red-team-passport/issues/new?template=adoption-pilot.yml). They may instead send feedback privately to the project owner; publish only sanitized results with consent.
 
 ## Evidence handling
 
@@ -68,4 +72,3 @@ Ask every participant the same questions:
 ## Definition of done
 
 The adoption evidence is complete when at least three eligible participants have attempted the task, the aggregate measures are calculated, all published quotations have consent, and a sanitized case study has been reviewed against the checklist in `CASE_STUDY_TEMPLATE.md`.
-
