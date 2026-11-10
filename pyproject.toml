@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools==84.0.0", "wheel==0.48.0"]
+requires = ["setuptools==84.2.1", "wheel==0.48.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -28,11 +28,11 @@ vendor-rtp = "apps.api.cli:main"
 
 [project.optional-dependencies]
 dev = [
-  "pytest==9.1.1",
+  "pytest==9.2.0",
   "pytest-cov==7.1.0",
-  "ruff==0.16.6",
+  "ruff==0.17.3",
   "pip-audit==2.10.1",
-  "httpx2==2.12.0"
+  "httpx2==2.16.0"
 ]
 
 [tool.pytest.ini_options]
